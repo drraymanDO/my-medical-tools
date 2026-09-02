@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Medical Tools</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(135deg, #f8fafc, #eef2f7);
+    padding: 40px 20px;
+    color: #1e293b;
+    min-height: 100vh;
+  }
+  .container { max-width: 640px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 36px; }
+  h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+  .subtitle { color: #64748b; font-size: 14px; }
+  .tool-grid { display: grid; gap: 14px; }
+  .tool-card {
+    display: block;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 20px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  .tool-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    border-color: #93c5fd;
+  }
+  .tool-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .tool-desc { font-size: 13px; color: #64748b; line-height: 1.4; }
+  .arrow { margin-left: auto; color: #94a3b8; font-size: 18px; }
+  .tool-name-row { display: flex; align-items: center; }
+  .placeholder {
+    border: 2px dashed #cbd5e1;
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 13px;
+  }
+  footer { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 40px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🩺 My Medical Tools</h1>
+    <div class="subtitle">A collection of quick reference calculators</div>
+  </header>
+
+  <div class="tool-grid">
+    <a class="tool-card" href="la-strain-calculator.html">
+      <div class="tool-name-row">
+        <span class="tool-name">📊 LA Strain Reference Calculator</span>
+        <span class="arrow">→</span>
+      </div>
+      <div class="tool-desc">Compare reservoir, conduit, and contractile LA strain values against age/sex-stratified normal ranges, with diastolic dysfunction pattern interpretation.</div>
+    </a>
+
+    <!-- Add more tool cards here as you build them, following the same format -->
+
+    <div class="placeholder">
+      More tools coming soon
+    </div>
+  </div>
+
+  <footer>For reference/educational use only — not a substitute for clinical judgment.</footer>
+</div>
+</body>
+</html>
