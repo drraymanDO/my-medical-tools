@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LA Strain Reference Calculator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    padding: 24px;
+    color: #1e293b;
+  }
+  .container { max-width: 560px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 20px; }
+  .card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  label { display: block; font-size: 11px; font-weight: 600; color: #64748b; margin-bottom: 4px; }
+  input, select {
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    outline: none;
+    font-family: inherit;
+  }
+  input:focus, select:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,0.2); }
+  .hint { font-size: 11px; color: #94a3b8; margin-top: 8px; }
+  .agegroup { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+  .result-card {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .result-card.normal { background: #f0fdf4; border-color: #bbf7d0; }
+  .result-card.low { background: #fef2f2; border-color: #fecaca; }
+  .result-card.high { background: #fffbeb; border-color: #fde68a; }
+  .result-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .result-title { font-weight: 600; font-size: 14px; }
+  .result-label { font-weight: 700; font-size: 12px; }
+  .result-label.normal { color: #16a34a; }
+  .result-label.low { color: #dc2626; }
+  .result-label.high { color: #d97706; }
+  .result-note { font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
+  .result-bottom { display: flex; justify-content: space-between; font-size: 12px; color: #475569; }
+  .mono { font-family: "SF Mono", Monaco, monospace; font-weight: 600; color: #0f172a; }
+  .toggle-btn {
+    width: 100%; background: none; border: none; color: #2563eb;
+    font-size: 13px; font-weight: 600; padding: 10px; cursor: pointer;
+  }
+  .toggle-btn:hover { color: #1d4ed8; }
+  .ranges-note { font-size: 11px; color: #94a3b8; margin-bottom: 12px; }
+  .age-group-block { margin-bottom: 14px; }
+  .age-group-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+  .sex-block { padding-left: 8px; border-left: 2px solid #f1f5f9; margin-bottom: 8px; }
+  .sex-title { font-size: 11px; font-weight: 600; color: #64748b; text-transform: capitalize; margin-bottom: 4px; }
+  .range-input-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .range-input-row span { font-size: 11px; color: #94a3b8; }
+  .range-input-row input { width: 55px; padding: 4px 6px; font-size: 11px; }
+  .param-label { width: 26px; font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+  .footer-note { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 20px; }
+  #toggleIcon { display: inline-block; transition: transform 0.2s; }
+  .interp-card {
+    border-radius: 12px;
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .interp-card.attention { background: #fffbeb; border-color: #fde68a; }
+  .interp-card.concern { background: #fef2f2; border-color: #fecaca; }
+  .interp-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .interp-title.normal { color: #1d4ed8; }
+  .interp-title.attention { color: #b45309; }
+  .interp-title.concern { color: #b91c1c; }
+  .interp-body { font-size: 13px; color: #334155; line-height: 1.5; }
+  .interp-pattern { font-size: 11px; color: #64748b; margin-top: 8px; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>LA Strain Reference Calculator</h1>
+  <div class="subtitle">Compare reservoir, conduit, and contractile strain to age/sex-stratified normal ranges</div>
+  <div class="subtitle" style="margin-top:-12px;">Default ranges: Singh et al., 2021, <em>J Am Soc Echocardiogr</em> (WASE Study)</div>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>Age</label>
+        <input type="number" id="age" value="30">
+        <div class="agegroup" id="ageGroupLabel">Group: &lt;40 yrs</div>
+      </div>
+      <div>
+        <label>Sex</label>
+        <select id="sex">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row3">
+      <div>
+        <label>LASr (%)</label>
+        <input type="number" id="sr" placeholder="e.g. 49.2">
+      </div>
+      <div>
+        <label>LAScd (%)</label>
+        <input type="number" id="cd" placeholder="e.g. -35.8">
+      </div>
+      <div>
+        <label>LASct (%)</label>
+        <input type="number" id="ct" placeholder="e.g. -13.4">
+      </div>
+    </div>
+    <div class="hint">Tip: enter Cd and Ct as negative values as reported by your software — magnitude is auto-compared.</div>
+  </div>
+
+  <div id="results"></div>
+
+  <div id="interpretation"></div>
+
+  <button class="toggle-btn" id="toggleRangesBtn">Edit reference ranges</button>
+
+  <div class="card" id="rangesPanel" style="display:none;">
+    <div class="ranges-note">Default values sourced from Singh et al., 2021, J Am Soc Echocardiogr (WASE Study). Replace with your own lab/vendor's validated reference values if different — LA strain cutoffs vary meaningfully by software/vendor. Changes apply immediately.</div>
+    <div id="rangesEditor"></div>
+  </div>
+
+  <div class="footer-note">For reference/educational use only — not a substitute for clinical judgment or the source publication.</div>
+</div>
+
+<script>
+  let ranges = {
+    "18-40":  { male: { sr:[25,63], cd:[18,50], ct:[2,23] },  female: { sr:[29,62], cd:[22,56], ct:[2,21] } },
+    "41-65":{ male: { sr:[23,61], cd:[12,43], ct:[5,28] },  female: { sr:[22,56], cd:[12,42], ct:[6,28] } },
+    ">65":  { male: { sr:[24,57], cd:[10,36],  ct:[9,32] },  female: { sr:[21,56], cd:[9,36],  ct:[7,30] } }
+  };
+
+  const paramMeta = {
+    sr: { title: "Reservoir Strain (LASr)", note: "Reflects LA stretch/compliance during LV systole" },
+    cd: { title: "Conduit Strain (LAScd)", note: "Reflects passive early filling, tied to LV relaxation" },
+    ct: { title: "Contractile Strain (LASct)", note: "Reflects active atrial kick / booster function" }
+  };
+
+  function getAgeGroup(age) {
+    if (age >= 18 && age <= 40) return "18-40";
+    if (age >= 41 && age <= 65) return "41-65";
+    return ">65";
+  }
+
+  function classify(value, [low, high]) {
+    if (value < low) return { label: "Below normal", cls: "low" };
+    if (value > high) return { label: "Above normal", cls: "high" };
+    return { label: "Normal", cls: "normal" };
+  }
+
+  function interpretPattern(srCls, cdCls, ctCls, hasAll) {
+    if (!hasAll) return null;
+
+    // All normal
+    if (srCls === 'normal' && cdCls === 'normal' && ctCls === 'normal') {
+      return {
+        level: 'normal',
+        title: '✓ Normal LA strain pattern',
+        body: 'All three phases (reservoir, conduit, contractile) fall within normal limits. No pattern suggestive of LA dysfunction or diastolic impairment.',
+        pattern: 'Sr normal / Cd normal / Ct normal'
+      };
+    }
+
+    // Early diastolic dysfunction: Sr normal, Cd low, Ct high (compensating)
+    if (srCls === 'normal' && cdCls === 'low' && ctCls === 'high') {
+      return {
+        level: 'attention',
+        title: '⚠ Pattern suggestive of early diastolic dysfunction',
+        body: 'Reservoir strain is preserved, but reduced conduit strain paired with increased contractile strain suggests impaired LV relaxation with early compensation — the atrium is contracting harder to make up for reduced passive early filling. This is a classic early/compensated diastolic dysfunction pattern, often preceding any drop in reservoir strain or LA enlargement.',
+        pattern: 'Sr normal / Cd ↓ / Ct ↑'
+      };
+    }
+
+    // Moderate: Sr low-normal or low, Cd low, Ct still elevated/high-normal
+    if ((srCls === 'low' || srCls === 'normal') && cdCls === 'low' && (ctCls === 'high' || ctCls === 'normal')) {
+      return {
+        level: 'attention',
+        title: '⚠ Pattern suggestive of moderate diastolic dysfunction',
+        body: 'Conduit strain is reduced, and reservoir strain is starting to decline (or borderline), while contractile strain remains preserved or elevated — the atrium is still compensating via its booster function, but overall reservoir compliance is beginning to suffer. This progression (from early to moderate) reflects worsening LV relaxation and rising filling pressures.',
+        pattern: 'Sr ↓/normal / Cd ↓ / Ct ↑/normal'
+      };
+    }
+
+    // Advanced/decompensated: Sr low, Cd low, Ct low (atrial myopathy / exhaustion)
+    if (srCls === 'low' && cdCls === 'low' && ctCls === 'low') {
+      return {
+        level: 'concern',
+        title: '⚠ Pattern suggestive of advanced/decompensated diastolic dysfunction',
+        body: 'All three phases are reduced — reservoir, conduit, AND contractile strain. This "global" reduction suggests the atrium has lost its compensatory reserve (sometimes called atrial myopathy or atrial "exhaustion") — commonly seen in advanced diastolic dysfunction, long-standing atrial fibrillation, or infiltrative/fibrotic atrial disease. This is a more concerning pattern than isolated conduit reduction with compensation.',
+        pattern: 'Sr ↓ / Cd ↓ / Ct ↓'
+      };
+    }
+
+    // Isolated low Sr
+    if (srCls === 'low' && cdCls !== 'low' && ctCls !== 'low') {
+      return {
+        level: 'attention',
+        title: '⚠ Isolated reduction in reservoir strain',
+        body: 'Reservoir strain alone is reduced while conduit and contractile phases remain preserved. Low LASr reflects reduced LA compliance/stretch capacity and is often one of the earliest and most sensitive markers of LA dysfunction — sometimes appearing before conduit/contractile changes or LA enlargement. Consider clinical context (hypertension, early HFpEF, amyloidosis screening if otherwise unexplained).',
+        pattern: 'Sr ↓ / Cd normal / Ct normal'
+      };
+    }
+
+    // Sr high/supranormal with others normal (like the earlier example, 49.2%)
+    if (srCls === 'high' && cdCls !== 'low' && ctCls !== 'low') {
+      return {
+        level: 'normal',
+        title: '✓ Supranormal reservoir strain — not concerning',
+        body: 'Reservoir strain above the reference range, with conduit and contractile phases normal, is generally not pathological. This pattern is often seen in younger, healthy, or highly compliant hearts (sometimes athletic) rather than representing disease.',
+        pattern: 'Sr ↑ / Cd normal / Ct normal'
+      };
+    }
+
+    // Fallback: mixed pattern that does not fit cleanly
+    return {
+      level: 'attention',
+      title: 'ℹ Mixed pattern — no single classic category',
+      body: "This combination does not map cleanly to a single textbook pattern (normal, early, moderate, or advanced diastolic dysfunction). Consider correlating with other diastolic parameters (E over e prime, LA volume index, TR velocity) and clinical context rather than relying on strain values alone.",
+      pattern: `Sr ${srCls} / Cd ${cdCls} / Ct ${ctCls}`
+    };
+  }
+
+  function render() {
+    const age = Number(document.getElementById('age').value) || 0;
+    const sex = document.getElementById('sex').value;
+    const ageGroup = getAgeGroup(age);
+    document.getElementById('ageGroupLabel').textContent = `Group: ${ageGroup} yrs`;
+
+    const activeRange = ranges[ageGroup][sex];
+
+    const srVal = document.getElementById('sr').value;
+    const cdVal = document.getElementById('cd').value;
+    const ctVal = document.getElementById('ct').value;
+
+    const srNum = parseFloat(srVal);
+    const cdNum = Math.abs(parseFloat(cdVal));
+    const ctNum = Math.abs(parseFloat(ctVal));
+
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '';
+
+    const items = [
+      { key: 'sr', val: srVal, num: srNum, range: activeRange.sr },
+      { key: 'cd', val: cdVal, num: cdNum, range: activeRange.cd },
+      { key: 'ct', val: ctVal, num: ctNum, range: activeRange.ct }
+    ];
+
+    items.forEach(item => {
+      const meta = paramMeta[item.key];
+      const hasVal = item.val !== '' && !isNaN(item.num);
+      const result = hasVal ? classify(item.num, item.range) : null;
+      const cardClass = result ? result.cls : '';
+      const div = document.createElement('div');
+      div.className = `result-card ${cardClass}`;
+      div.innerHTML = `
+        <div class="result-top">
+          <span class="result-title">${meta.title}</span>
+          ${result ? `<span class="result-label ${result.cls}">${result.label}</span>` : ''}
+        </div>
+        <div class="result-note">${meta.note}</div>
+        <div class="result-bottom">
+          <span>Your value: <span class="mono">${item.val || '—'}%</span></span>
+          <span>Normal: <span class="mono">${item.range[0]}–${item.range[1]}%</span></span>
+        </div>
+      `;
+      resultsDiv.appendChild(div);
+    });
+
+    // Pattern interpretation
+    const srClsResult = (srVal !== '' && !isNaN(srNum)) ? classify(srNum, activeRange.sr).cls : null;
+    const cdClsResult = (cdVal !== '' && !isNaN(cdNum)) ? classify(cdNum, activeRange.cd).cls : null;
+    const ctClsResult = (ctVal !== '' && !isNaN(ctNum)) ? classify(ctNum, activeRange.ct).cls : null;
+    const hasAll = srClsResult && cdClsResult && ctClsResult;
+
+    const interpDiv = document.getElementById('interpretation');
+    const pattern = interpretPattern(srClsResult, cdClsResult, ctClsResult, hasAll);
+
+    if (pattern) {
+      interpDiv.innerHTML = `
+        <div class="interp-card ${pattern.level}">
+          <div class="interp-title ${pattern.level}">${pattern.title}</div>
+          <div class="interp-body">${pattern.body}</div>
+          <div class="interp-pattern">Pattern: ${pattern.pattern}</div>
+        </div>
+      `;
+    } else {
+      interpDiv.innerHTML = '';
+    }
+  }
+
+  function renderRangesEditor() {
+    const editor = document.getElementById('rangesEditor');
+    editor.innerHTML = '';
+    Object.keys(ranges).forEach(group => {
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'age-group-block';
+      groupDiv.innerHTML = `<div class="age-group-title">Age ${group}</div>`;
+
+      Object.keys(ranges[group]).forEach(sexKey => {
+        const sexDiv = document.createElement('div');
+        sexDiv.className = 'sex-block';
+        sexDiv.innerHTML = `<div class="sex-title">${sexKey}</div>`;
+
+        ['sr','cd','ct'].forEach(param => {
+          const [low, high] = ranges[group][sexKey][param];
+          const rowDiv = document.createElement('div');
+          rowDiv.className = 'range-input-row';
+          rowDiv.innerHTML = `
+            <span class="param-label">${param}</span>
+            <input type="number" value="${low}" data-group="${group}" data-sex="${sexKey}" data-param="${param}" data-idx="0">
+            <span>to</span>
+            <input type="number" value="${high}" data-group="${group}" data-sex="${sexKey}" data-param="${param}" data-idx="1">
+            <span>%</span>
+          `;
+          sexDiv.appendChild(rowDiv);
+        });
+        groupDiv.appendChild(sexDiv);
+      });
+      editor.appendChild(groupDiv);
+    });
+
+    editor.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        const { group, sex, param, idx } = e.target.dataset;
+        ranges[group][sex][param][Number(idx)] = Number(e.target.value);
+        render();
+      });
+    });
+  }
+
+  document.getElementById('toggleRangesBtn').addEventListener('click', () => {
+    const panel = document.getElementById('rangesPanel');
+    const isHidden = panel.style.display === 'none';
+    panel.style.display = isHidden ? 'block' : 'none';
+    document.getElementById('toggleRangesBtn').textContent = isHidden ? 'Hide reference ranges' : 'Edit reference ranges';
+  });
+
+  ['age','sex','sr','cd','ct'].forEach(id => {
+    document.getElementById(id).addEventListener('input', render);
+    document.getElementById(id).addEventListener('change', render);
+  });
+
+  renderRangesEditor();
+  render();
+</script>
+</body>
+</html>
