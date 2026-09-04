@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RV Strain & Function Reference</title>
+<style>
+  :root {
+    --normal: #1a7f5a;
+    --mild: #c98a1b;
+    --mod: #d1631e;
+    --severe: #c22e2e;
+    --bg: #0f1720;
+    --card: #17212c;
+    --border: #263340;
+    --text: #e6edf3;
+    --muted: #9db0c0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 20px 60px;
+    background: linear-gradient(180deg, #0b1218, #0f1720);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  h1 {
+    font-size: 1.7rem;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .subtitle {
+    color: var(--muted);
+    margin-bottom: 32px;
+    font-size: 0.95rem;
+  }
+  h2 {
+    font-size: 1.15rem;
+    margin: 40px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2 .tag {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+  }
+  .grade-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 14px;
+  }
+  @media (max-width: 700px) {
+    .grade-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .grade-box {
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+    border: 1px solid var(--border);
+    background: #101820;
+  }
+  .grade-box .label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .grade-box .value {
+    font-size: 1.05rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .normal-label { color: var(--normal); }
+  .mild-label { color: var(--mild); }
+  .mod-label { color: var(--mod); }
+  .severe-label { color: var(--severe); }
+  .normal-box { border-color: rgba(26,127,90,0.4); background: rgba(26,127,90,0.08); }
+  .mild-box { border-color: rgba(201,138,27,0.4); background: rgba(201,138,27,0.08); }
+  .mod-box { border-color: rgba(209,99,30,0.4); background: rgba(209,99,30,0.08); }
+  .severe-box { border-color: rgba(194,46,46,0.4); background: rgba(194,46,46,0.08); }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .pill {
+    font-size: 0.8rem;
+    background: #101820;
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 20px;
+    color: var(--muted);
+  }
+  .pill b { color: var(--text); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 0.92rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    color: var(--muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+  }
+  tr:last-child td { border-bottom: none; }
+  td.param { font-weight: 600; }
+  .yes { color: var(--normal); font-weight: 600; }
+  .no { color: var(--severe); font-weight: 600; }
+
+  .note {
+    background: rgba(90,140,255,0.08);
+    border: 1px solid rgba(90,140,255,0.25);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+  .note b { color: var(--text); }
+
+  .footer {
+    margin-top: 48px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Right Ventricular Function — Reference Sheet</h1>
+  <div class="subtitle">Echocardiographic parameters, normal ranges, and severity grading</div>
+
+  <h2>RV Free Wall Longitudinal Strain (RVFWSL) <span class="tag">Speckle-tracking</span></h2>
+  <div class="card">
+    <div class="grade-grid">
+      <div class="grade-box normal-box">
+        <div class="label normal-label">Normal</div>
+        <div class="value">&lt; -20%</div>
+      </div>
+      <div class="grade-box mild-box">
+        <div class="label mild-label">Mild</div>
+        <div class="value">-18 to -20%</div>
+      </div>
+      <div class="grade-box mod-box">
+        <div class="label mod-label">Moderate</div>
+        <div class="value">-13 to -17%</div>
+      </div>
+      <div class="grade-box severe-box">
+        <div class="label severe-label">Severe</div>
+        <div class="value">&gt; -13%</div>
+      </div>
+    </div>
+    <div class="meta-row">
+      <span class="pill">Size-independent: <b>Yes</b></span>
+      <span class="pill">Sex adjustment: <b>Not routine</b></span>
+      <span class="pill">Age adjustment: <b>Not routine</b></span>
+    </div>
+    <div class="note">More negative = better function. Some labs use -23% to -25% as the normal threshold — meaningful heterogeneity exists across vendors/software. <b>Vendor variability often exceeds biological variability</b> — use the same machine/software for serial studies.</div>
+  </div>
+
+  <h2>TAPSE <span class="tag">Tricuspid Annular Plane Systolic Excursion</span></h2>
+  <div class="card">
+    <div class="grade-grid">
+      <div class="grade-box normal-box">
+        <div class="label normal-label">Normal</div>
+        <div class="value">&ge; 17 mm</div>
+      </div>
+      <div class="grade-box mild-box">
+        <div class="label mild-label">Mild</div>
+        <div class="value">15–16 mm</div>
+      </div>
+      <div class="grade-box mod-box">
+        <div class="label mod-label">Moderate</div>
+        <div class="value">11–14 mm</div>
+      </div>
+      <div class="grade-box severe-box">
+        <div class="label severe-label">Severe</div>
+        <div class="value">&lt; 11 mm</div>
+      </div>
+    </div>
+    <div class="meta-row">
+      <span class="pill">Size-independent: <b>No</b></span>
+      <span class="pill">Sex adjustment: <b>Not routine</b></span>
+      <span class="pill">Age adjustment: <b>Not routine</b></span>
+    </div>
+    <div class="note">Absolute linear measurement (mm) — <b>not indexed to body size</b>, despite known BSA-related variability. Men trend slightly higher than women; TAPSE trends down with age. The flat 17mm cutoff remains the ASE guideline standard regardless.</div>
+  </div>
+
+  <h2>RV Fractional Area Change (FAC)</h2>
+  <div class="card">
+    <div class="grade-grid">
+      <div class="grade-box normal-box">
+        <div class="label normal-label">Normal</div>
+        <div class="value">&ge; 35%</div>
+      </div>
+      <div class="grade-box mild-box">
+        <div class="label mild-label">Mild</div>
+        <div class="value">25–34%</div>
+      </div>
+      <div class="grade-box mod-box">
+        <div class="label mod-label">Moderate</div>
+        <div class="value">18–24%</div>
+      </div>
+      <div class="grade-box severe-box">
+        <div class="label severe-label">Severe</div>
+        <div class="value">&lt; 18%</div>
+      </div>
+    </div>
+    <div class="meta-row">
+      <span class="pill">Size-independent: <b>Yes</b></span>
+      <span class="pill">Sex adjustment: <b>Not routine</b></span>
+      <span class="pill">Age adjustment: <b>Not routine</b></span>
+    </div>
+    <div class="note">Calculated as [RV end-diastolic area − RV end-systolic area] / RV end-diastolic area — inherently self-normalized for size, similar to strain. Age/sex effects less well-characterized than for TAPSE.</div>
+  </div>
+
+  <h2>Tissue Doppler S' (Tricuspid Lateral Annular Velocity)</h2>
+  <div class="card">
+    <div class="grade-grid">
+      <div class="grade-box normal-box">
+        <div class="label normal-label">Normal</div>
+        <div class="value">&ge; 9.5 cm/s</div>
+      </div>
+      <div class="grade-box severe-box" style="grid-column: span 3; display:flex; align-items:center; justify-content:center;">
+        <div class="value" style="font-weight:400; font-size:0.85rem; color: var(--muted);">Formal multi-tier grading less standardized than TAPSE/FAC/strain</div>
+      </div>
+    </div>
+    <div class="meta-row">
+      <span class="pill">Size-independent: <b>No</b> (velocity-based)</span>
+      <span class="pill">Sex adjustment: <b>Not routine</b></span>
+      <span class="pill">Age adjustment: <b>Not routine</b></span>
+    </div>
+  </div>
+
+  <h2>Summary Comparison</h2>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Normal Cutoff</th>
+          <th>Size-Independent?</th>
+          <th>Age/Sex Adjustment Used Clinically?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="param">RVFWSL (strain)</td>
+          <td>&lt; -20%</td>
+          <td class="yes">Yes (ratio-based)</td>
+          <td class="no">No</td>
+        </tr>
+        <tr>
+          <td class="param">TAPSE</td>
+          <td>&ge; 17 mm</td>
+          <td class="no">No (absolute distance)</td>
+          <td class="no">No</td>
+        </tr>
+        <tr>
+          <td class="param">FAC</td>
+          <td>&ge; 35%</td>
+          <td class="yes">Yes (ratio-based)</td>
+          <td class="no">No</td>
+        </tr>
+        <tr>
+          <td class="param">S' (tissue Doppler)</td>
+          <td>&ge; 9.5 cm/s</td>
+          <td class="no">No (velocity-based)</td>
+          <td class="no">No</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note" style="margin-top: 24px;">
+    <b>Practical takeaway:</b> Guideline cutoffs (ASE/EACVI) are single universal thresholds, not age/sex/BSA-stratified nomograms — even though biological variability is well documented in the literature. The most important principle in practice is trending the <b>same patient serially, using the same modality/software</b>, rather than anchoring too heavily on population cutoffs — especially for strain, where inter-vendor variability can exceed true patient-to-patient differences.
+  </div>
+
+  <div class="footer">Reference summary for educational purposes — always correlate with clinical context, guidelines, and institutional protocols.</div>
+</div>
+</body>
+</html>
