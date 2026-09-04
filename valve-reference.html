@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aortic Valve Reference — Stenosis & Regurgitation</title>
+<style>
+  :root {
+    --normal: #1a7f5a;
+    --mild: #4a8fc9;
+    --mod: #c98a1b;
+    --severe: #c22e2e;
+    --bg: #0f1720;
+    --card: #17212c;
+    --border: #263340;
+    --text: #e6edf3;
+    --muted: #9db0c0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 20px 60px;
+    background: linear-gradient(180deg, #0b1218, #0f1720);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  h1 { font-size: 1.7rem; margin-bottom: 4px; letter-spacing: -0.01em; }
+  .subtitle { color: var(--muted); margin-bottom: 28px; font-size: 0.95rem; }
+
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .tab.active { color: var(--text); border-bottom-color: #4a8fc9; }
+  .tab:hover { color: var(--text); }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  h2 {
+    font-size: 1.15rem;
+    margin: 32px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2:first-child { margin-top: 0; }
+  h2 .tag {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4px;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    color: var(--muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+  }
+  tr:last-child td { border-bottom: none; }
+  td.param { font-weight: 600; white-space: nowrap; }
+  .normal-cell { color: var(--normal); font-weight: 600; }
+  .mild-cell { color: var(--mild); font-weight: 600; }
+  .mod-cell { color: var(--mod); font-weight: 600; }
+  .severe-cell { color: var(--severe); font-weight: 600; }
+
+  .grade-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .grade-grid.four { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 700px) {
+    .grade-grid, .grade-grid.four { grid-template-columns: repeat(2, 1fr); }
+  }
+  .grade-box {
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+    border: 1px solid var(--border);
+    background: #101820;
+  }
+  .grade-box .label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .grade-box .value {
+    font-size: 1rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .mild-box { border-color: rgba(74,143,201,0.4); background: rgba(74,143,201,0.08); }
+  .mod-box { border-color: rgba(201,138,27,0.4); background: rgba(201,138,27,0.08); }
+  .severe-box { border-color: rgba(194,46,46,0.4); background: rgba(194,46,46,0.08); }
+  .normal-box { border-color: rgba(26,127,90,0.4); background: rgba(26,127,90,0.08); }
+
+  .note {
+    background: rgba(90,140,255,0.08);
+    border: 1px solid rgba(90,140,255,0.25);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 0.87rem;
+    color: var(--muted);
+    margin-top: 12px;
+  }
+  .note b { color: var(--text); }
+  .warn {
+    background: rgba(194,46,46,0.08);
+    border: 1px solid rgba(194,46,46,0.3);
+  }
+
+  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .pill {
+    font-size: 0.78rem;
+    background: #101820;
+    border: 1px solid var(--border);
+    padding: 5px 11px;
+    border-radius: 20px;
+    color: var(--muted);
+  }
+  .pill b { color: var(--text); }
+
+  .footer {
+    margin-top: 44px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  ul.compact { margin: 8px 0 0; padding-left: 20px; font-size: 0.9rem; }
+  ul.compact li { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Valvular Heart Disease — Echo Reference</h1>
+  <div class="subtitle">Grading criteria for Aortic Stenosis, Aortic Regurgitation, Mitral Stenosis, and Mitral Regurgitation (ASE/EACVI-based)</div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="as">Aortic Stenosis</button>
+    <button class="tab" data-tab="ar">Aortic Regurgitation</button>
+    <button class="tab" data-tab="ms">Mitral Stenosis</button>
+    <button class="tab" data-tab="mr">Mitral Regurgitation</button>
+  </div>
+
+  <!-- AORTIC STENOSIS -->
+  <div class="section active" id="as">
+
+    <h2>Primary Grading Parameters <span class="tag">Continuous-wave Doppler</span></h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Normal</th>
+            <th>Mild</th>
+            <th>Moderate</th>
+            <th>Severe</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="param">Aortic Jet Velocity (Vmax)</td>
+            <td class="normal-cell">&lt; 2.0 m/s</td>
+            <td class="mild-cell">2.0–2.9 m/s</td>
+            <td class="mod-cell">3.0–3.9 m/s</td>
+            <td class="severe-cell">&ge; 4.0 m/s</td>
+          </tr>
+          <tr>
+            <td class="param">Mean Gradient</td>
+            <td class="normal-cell">—</td>
+            <td class="mild-cell">&lt; 20 mmHg</td>
+            <td class="mod-cell">20–39 mmHg</td>
+            <td class="severe-cell">&ge; 40 mmHg</td>
+          </tr>
+          <tr>
+            <td class="param">Aortic Valve Area (AVA)</td>
+            <td class="normal-cell">2.6–3.5 cm²</td>
+            <td class="mild-cell">&gt; 1.5 cm²</td>
+            <td class="mod-cell">1.0–1.5 cm²</td>
+            <td class="severe-cell">&lt; 1.0 cm²</td>
+          </tr>
+          <tr>
+            <td class="param">Indexed AVA (AVAi)</td>
+            <td class="normal-cell">—</td>
+            <td class="mild-cell">&gt; 0.85 cm²/m²</td>
+            <td class="mod-cell">0.60–0.85 cm²/m²</td>
+            <td class="severe-cell">&lt; 0.6 cm²/m²</td>
+          </tr>
+          <tr>
+            <td class="param">Dimensionless Index (DVI)</td>
+            <td class="normal-cell">&ge; 0.50</td>
+            <td class="mild-cell">&gt; 0.50</td>
+            <td class="mod-cell">0.25–0.50</td>
+            <td class="severe-cell">&lt; 0.25</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note">
+        <b>AVA calculation (continuity equation):</b> AVA = (LVOT area × LVOT VTI) / AV VTI. <br>
+        <b>DVI (dimensionless index)</b> = LVOT VTI / AV VTI — useful because it's independent of LVOT diameter measurement error, which is the biggest source of error in the continuity equation.
+      </div>
+    </div>
+
+    <h2>Special Situations & Pitfalls</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Scenario</th><th>Issue</th><th>Approach</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="param">Low-flow, low-gradient AS (reduced EF)</td>
+            <td>AVA &lt;1.0 cm² but mean gradient &lt;40 mmHg due to low stroke volume</td>
+            <td>Dobutamine stress echo to assess contractile reserve & true severity</td>
+          </tr>
+          <tr>
+            <td class="param">Low-flow, low-gradient AS (preserved EF)</td>
+            <td>"Paradoxical" low-flow state — small, hypertrophied LV with low stroke volume index despite normal EF</td>
+            <td>Stroke volume index &lt;35 mL/m² confirms low-flow state; consider CT calcium scoring</td>
+          </tr>
+          <tr>
+            <td class="param">High-flow states</td>
+            <td>Anemia, AV fistula, hyperthyroidism can elevate gradients despite non-severe AS</td>
+            <td>Correlate with AVA & clinical context, not gradient alone</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note warn">
+        <b>Aortic valve calcium score (CT):</b> Used to confirm severity when Doppler/echo parameters are discordant. General thresholds: Men — severe likely &ge;2000 AU (unlikely &lt;1600 AU); Women — severe likely &ge;1200 AU (unlikely &lt;800 AU).
+      </div>
+    </div>
+
+    <h2>Supportive / Qualitative Findings</h2>
+    <div class="card">
+      <ul class="compact">
+        <li><b>Valve morphology:</b> degree of leaflet calcification/restriction on 2D imaging (heavy calcification supports severe AS)</li>
+        <li><b>LV hypertrophy:</b> concentric LVH is a compensatory response to chronic pressure overload</li>
+        <li><b>LV function:</b> reduced EF in advanced disease reflects afterload mismatch/decompensation</li>
+        <li><b>Acceleration time / ejection time ratio:</b> used in some algorithms, particularly intraoperative TEE, when spectral Doppler alignment is imperfect</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- AORTIC REGURGITATION -->
+  <div class="section" id="ar">
+
+    <h2>Qualitative & Semi-Quantitative Parameters</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Mild</th>
+            <th>Moderate</th>
+            <th>Severe</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="param">Jet Width / LVOT (color Doppler)</td>
+            <td class="mild-cell">&lt; 25%</td>
+            <td class="mod-cell">25–64%</td>
+            <td class="severe-cell">&ge; 65%</td>
+          </tr>
+          <tr>
+            <td class="param">Vena Contracta Width</td>
+            <td class="mild-cell">&lt; 0.3 cm</td>
+            <td class="mod-cell">0.3–0.6 cm</td>
+            <td class="severe-cell">&gt; 0.6 cm</td>
+          </tr>
+          <tr>
+            <td class="param">Pressure Half-Time (PHT)</td>
+            <td class="mild-cell">&gt; 500 ms</td>
+            <td class="mod-cell">200–500 ms</td>
+            <td class="severe-cell">&lt; 200 ms</td>
+          </tr>
+          <tr>
+            <td class="param">Diastolic Flow Reversal (descending aorta)</td>
+            <td class="mild-cell">Absent/brief early diastolic</td>
+            <td class="mod-cell">Intermediate</td>
+            <td class="severe-cell">Holodiastolic, prominent</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Quantitative Parameters</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Mild</th>
+            <th>Moderate</th>
+            <th>Severe</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="param">Regurgitant Volume</td>
+            <td class="mild-cell">&lt; 30 mL/beat</td>
+            <td class="mod-cell">30–59 mL/beat</td>
+            <td class="severe-cell">&ge; 60 mL/beat</td>
+          </tr>
+          <tr>
+            <td class="param">Regurgitant Fraction</td>
+            <td class="mild-cell">&lt; 30%</td>
+            <td class="mod-cell">30–49%</td>
+            <td class="severe-cell">&ge; 50%</td>
+          </tr>
+          <tr>
+            <td class="param">Effective Regurgitant Orifice Area (EROA)</td>
+            <td class="mild-cell">&lt; 0.10 cm²</td>
+            <td class="mod-cell">0.10–0.29 cm²</td>
+            <td class="severe-cell">&ge; 0.30 cm²</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note">
+        Quantitative parameters (regurgitant volume, RF, EROA) are typically derived via the <b>PISA method</b> in AR, though it's technically more challenging than in mitral regurgitation due to the aortic valve's geometry and is used less routinely in everyday practice compared to the semi-quantitative measures above.
+      </div>
+    </div>
+
+    <h2>Structural / Consequential Findings</h2>
+    <div class="card">
+      <div class="grade-grid">
+        <div class="grade-box mild-box">
+          <div class="label mild-cell">Mild</div>
+          <div class="value">Normal LV size</div>
+        </div>
+        <div class="grade-box mod-box">
+          <div class="label mod-cell">Moderate</div>
+          <div class="value">Normal or mildly dilated LV</div>
+        </div>
+        <div class="grade-box severe-box">
+          <div class="label severe-cell">Severe</div>
+          <div class="value">LV dilation (chronic)</div>
+        </div>
+      </div>
+      <div class="note">
+        <b>Chronic severe AR</b> leads to LV eccentric hypertrophy/dilation as the ventricle compensates for the combined volume overload. <b>LV end-systolic diameter (LVESD)</b> and <b>LVEF</b> trending are central to timing surgical referral — intervention is generally considered once LVESD &gt; 50 mm (or indexed &gt;25 mm/m²) or LVEF &le; 55%, even in asymptomatic patients, per current guidelines.
+      </div>
+    </div>
+
+    <h2>Acute vs. Chronic AR — Key Distinction</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Feature</th><th>Acute Severe AR</th><th>Chronic Severe AR</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="param">LV size</td>
+            <td>Normal (no time to remodel)</td>
+            <td>Dilated (eccentric hypertrophy)</td>
+          </tr>
+          <tr>
+            <td class="param">Hemodynamic tolerance</td>
+            <td>Poor — non-compliant LV, high filling pressures</td>
+            <td>Often well-tolerated for years</td>
+          </tr>
+          <tr>
+            <td class="param">Mitral valve</td>
+            <td>Premature MV closure on M-mode — key sign</td>
+            <td>Normal MV closure timing</td>
+          </tr>
+          <tr>
+            <td class="param">Typical causes</td>
+            <td>Aortic dissection, endocarditis, trauma</td>
+            <td>Bicuspid valve, annular dilation, degenerative disease</td>
+          </tr>
+          <tr>
+            <td class="param">Clinical picture</td>
+            <td>Acute pulmonary edema / cardiogenic shock</td>
+            <td>Gradual exertional dyspnea over years</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note warn">
+        <b>Acute severe AR is a surgical emergency</b> — the non-dilated, non-compliant LV cannot accommodate the sudden regurgitant volume, leading to rapid decompensation. Premature diastolic mitral valve closure on echo is a critical clue not to miss.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MITRAL STENOSIS -->
+  <div class="section" id="ms">
+
+    <h2>Primary Grading Parameters <span class="tag">2D & Doppler</span></h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Normal</th>
+            <th>Mild</th>
+            <th>Moderate</th>
+            <th>Severe</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="param">Mitral Valve Area (MVA)</td>
+            <td class="normal-cell">4–6 cm²</td>
+            <td class="mild-cell">&gt; 1.5 cm²</td>
+            <td class="mod-cell">1.0–1.5 cm²</td>
+            <td class="severe-cell">&lt; 1.0 cm²</td>
+          </tr>
+          <tr>
+            <td class="param">Mean Gradient</td>
+            <td class="normal-cell">—</td>
+            <td class="mild-cell">&lt; 5 mmHg</td>
+            <td class="mod-cell">5–10 mmHg</td>
+            <td class="severe-cell">&gt; 10 mmHg</td>
+          </tr>
+          <tr>
+            <td class="param">Pressure Half-Time (PHT)</td>
+            <td class="normal-cell">—</td>
+            <td class="mild-cell">&lt; 150 ms</td>
+            <td class="mod-cell">150–219 ms</td>
+            <td class="severe-cell">&ge; 220 ms</td>
+          </tr>
+          <tr>
+            <td class="param">Pulmonary Artery Systolic Pressure</td>
+            <td class="normal-cell">&lt; 30 mmHg</td>
+            <td class="mild-cell">&lt; 30 mmHg</td>
+            <td class="mod-cell">30–50 mmHg</td>
+            <td class="severe-cell">&gt; 50 mmHg</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note">
+        <b>MVA by Pressure Half-Time:</b> MVA = 220 / PHT. Quick and widely used, but affected by LV/LA compliance, AR, and immediately post-valvuloplasty (unreliable in the first 24-48h post-intervention). <br>
+        <b>MVA by Planimetry (2D short-axis):</b> most direct anatomic measurement — considered the reference method when image quality allows tracing the true leaflet tips at the smallest orifice. <br>
+        <b>MVA by Continuity Equation:</b> MVA = (LVOT area × LVOT VTI) / MV VTI — useful when PHT is unreliable (e.g., concomitant AR, arrhythmia) but requires no more than mild AR/MR to be valid.
+      </div>
+    </div>
+
+    <h2>Special Situations & Pitfalls</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Scenario</th><th>Issue</th><th>Approach</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="param">Atrial fibrillation</td>
+            <td>Beat-to-beat variability in filling time and gradient</td>
+            <td>Average measurements over 5-10 beats</td>
+          </tr>
+          <tr>
+            <td class="param">Concomitant AR</td>
+            <td>PHT shortened/unreliable due to faster LV pressure rise from combined MS+AR filling</td>
+            <td>Favor planimetry or continuity equation over PHT</td>
+          </tr>
+          <tr>
+            <td class="param">Tachycardia / short diastolic filling</td>
+            <td>Gradients can be overestimated due to incomplete diastasis</td>
+            <td>Correlate with MVA rather than gradient alone; consider rate control before final assessment</td>
+          </tr>
+          <tr>
+            <td class="param">Post-valvuloplasty (early)</td>
+            <td>PHT unreliable in first 24-48h due to acute compliance changes</td>
+            <td>Rely on planimetry/continuity in the immediate post-procedure period</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Morphology Scoring — Suitability for Valvuloplasty</h2>
+    <div class="card">
+      <div class="note">
+        <b>Wilkins Score</b> (0-4 each, total 0-16) grades four features: leaflet mobility, leaflet thickening, subvalvular thickening, and calcification. A total score <b>&le; 8</b> generally favors a good outcome with percutaneous balloon mitral valvuloplasty (PBMV), while higher scores favor surgical intervention.
+      </div>
+      <ul class="compact">
+        <li><b>Leaflet mobility:</b> restriction of leaflet tips vs. entire leaflet/subvalvular apparatus</li>
+        <li><b>Leaflet thickening:</b> near-normal (4-5mm) vs. markedly thickened (&gt;8-10mm)</li>
+        <li><b>Subvalvular thickening:</b> minimal chordal thickening vs. extensive fusion/shortening</li>
+        <li><b>Calcification:</b> single area of echo brightness vs. extensive calcification through most of leaflet tissue</li>
+      </ul>
+      <div class="note warn">
+        Commissural fusion pattern, degree of MR, and presence of LA thrombus (on TEE) are also essential to assess before PBMV — significant MR or LA appendage thrombus are contraindications regardless of Wilkins score.
+      </div>
+    </div>
+
+    <h2>Associated / Downstream Findings</h2>
+    <div class="card">
+      <ul class="compact">
+        <li><b>Left atrial enlargement:</b> chronic pressure/volume overload from obstructed LA emptying — degree often correlates with disease chronicity and AFib risk</li>
+        <li><b>Pulmonary hypertension:</b> develops from chronically elevated LA pressure transmitted backward — PASP is both a severity marker and a trigger for intervention consideration</li>
+        <li><b>RV dysfunction:</b> can develop secondary to long-standing pulmonary hypertension (ties back to the RV strain concepts — TAPSE, RV size, in this context reflect downstream consequences of MS rather than a primary RV problem)</li>
+        <li><b>LA thrombus:</b> stagnant flow in a dilated, poorly-contracting LA (especially with concurrent AFib) raises thromboembolic risk — critical to exclude via TEE prior to valvuloplasty or cardioversion</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- MITRAL REGURGITATION -->
+  <div class="section" id="mr">
+
+    <h2>Qualitative & Semi-Quantitative Parameters</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Mild</th>
+            <th>Moderate</th>
+            <th>Severe</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="param">Jet Area / LA Area (color Doppler)</td>
+            <td class="mild-cell">&lt; 20%</td>
+            <td class="mod-cell">20–40%</td>
+            <td class="severe-cell">&gt; 40%</td>
+          </tr>
+          <tr>
+            <td class="param">Vena Contracta Width</td>
+            <td class="mild-cell">&lt; 0.3 cm</td>
+            <td class="mod-cell">0.3–0.69 cm</td>
+            <td class="severe-cell">&ge; 0.7 cm</td>
+          </tr>
+          <tr>
+            <td class="param">Pulmonary Vein Flow</td>
+            <td class="mild-cell">Systolic dominant</td>
+            <td class="mod-cell">Systolic blunting</td>
+            <td class="severe-cell">Systolic flow reversal</td>
+          </tr>
+          <tr>
+            <td class="param">Mitral Inflow (E wave)</td>
+            <td class="mild-cell">A-wave dominant</td>
+            <td class="mod-cell">Variable</td>
+            <td class="severe-cell">E-wave dominant, &ge;1.2 m/s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Quantitative Parameters <span class="tag">PISA-based</span></h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Mild</th>
+            <th>Moderate</th>
+            <th>Severe</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="param">Regurgitant Volume</td>
+            <td class="mild-cell">&lt; 30 mL/beat</td>
+            <td class="mod-cell">30–59 mL/beat</td>
+            <td class="severe-cell">&ge; 60 mL/beat</td>
+          </tr>
+          <tr>
+            <td class="param">Regurgitant Fraction</td>
+            <td class="mild-cell">&lt; 30%</td>
+            <td class="mod-cell">30–49%</td>
+            <td class="severe-cell">&ge; 50%</td>
+          </tr>
+          <tr>
+            <td class="param">Effective Regurgitant Orifice Area (EROA)</td>
+            <td class="mild-cell">&lt; 0.20 cm²</td>
+            <td class="mod-cell">0.20–0.39 cm²</td>
+            <td class="severe-cell">&ge; 0.40 cm²</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note">
+        <b>PISA (Proximal Isovelocity Surface Area) method</b> is the most widely used quantitative approach for MR — it models flow convergence proximal to the regurgitant orifice to derive EROA and regurgitant volume. Note the <b>EROA severe threshold differs from AR</b> (&ge;0.40 cm² vs. &ge;0.30 cm²) — a common mix-up.
+      </div>
+      <div class="note warn">
+        <b>Primary vs. secondary MR EROA thresholds differ in the 2017 ACC/AHA guidelines</b> — secondary (functional) MR is considered severe at a lower EROA (&ge;0.40 cm²) and regurgitant volume (&ge;60 mL) than the classic primary MR thresholds used historically, reflecting that even modest functional MR carries prognostic weight in HF populations.
+      </div>
+    </div>
+
+    <h2>Primary vs. Secondary (Functional) MR</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Feature</th><th>Primary (Organic) MR</th><th>Secondary (Functional) MR</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="param">Valve leaflets</td>
+            <td>Structurally abnormal (prolapse, flail, rheumatic, endocarditis)</td>
+            <td>Structurally normal</td>
+          </tr>
+          <tr>
+            <td class="param">Mechanism</td>
+            <td>Intrinsic leaflet/chordal pathology</td>
+            <td>LV dilation/dysfunction or annular dilation pulls leaflets apart (tethering)</td>
+          </tr>
+          <tr>
+            <td class="param">Typical etiology</td>
+            <td>Myxomatous degeneration, rheumatic disease, endocarditis, chordal rupture</td>
+            <td>Ischemic or non-ischemic cardiomyopathy, LA dilation (atrial functional MR)</td>
+          </tr>
+          <tr>
+            <td class="param">Management implication</td>
+            <td>Often surgical repair/replacement once severe, even if asymptomatic with LV changes</td>
+            <td>Treat underlying LV disease first (GDMT); intervention (repair or transcatheter edge-to-edge repair) reserved for select persistent severe cases</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note">
+        This distinction matters enormously for management — <b>secondary MR severity is disease-dependent</b> and can improve with optimized heart failure therapy, whereas <b>primary MR from a structural lesion generally does not improve</b> without mechanical intervention.
+      </div>
+    </div>
+
+    <h2>Structural / Consequential Findings</h2>
+    <div class="card">
+      <ul class="compact">
+        <li><b>LV size:</b> chronic severe MR causes eccentric LV dilation as the ventricle accommodates combined forward + regurgitant volume</li>
+        <li><b>LV end-systolic diameter (LVESD) & EF:</b> central to surgical timing in primary MR — intervention generally considered once LVESD &ge; 40 mm or LVEF &le; 60%, even if asymptomatic, per current guidelines</li>
+        <li><b>LA size:</b> chronic volume overload leads to LA enlargement; a marker of chronicity and AFib risk</li>
+        <li><b>Pulmonary artery pressure:</b> elevated PASP is both a severity marker and, in secondary MR, a factor supporting intervention in persistently symptomatic patients on GDMT</li>
+      </ul>
+    </div>
+
+    <h2>Acute vs. Chronic MR — Key Distinction</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Feature</th><th>Acute Severe MR</th><th>Chronic Severe MR</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="param">LA/LV size</td>
+            <td>Normal/near-normal (no time to remodel)</td>
+            <td>Dilated LA and LV</td>
+          </tr>
+          <tr>
+            <td class="param">Color jet size</td>
+            <td>Can appear deceptively small/eccentric despite severe regurgitation — because of high LA pressure equalizing quickly</td>
+            <td>Often more holosystolic, better reflects volume by color proportions</td>
+          </tr>
+          <tr>
+            <td class="param">Hemodynamic tolerance</td>
+            <td>Poor — non-compliant LA causes rapid pulmonary edema</td>
+            <td>Often well-tolerated for years due to LA/LV compensation</td>
+          </tr>
+          <tr>
+            <td class="param">Typical causes</td>
+            <td>Papillary muscle rupture (post-MI), chordal rupture, endocarditis</td>
+            <td>Myxomatous degeneration, ischemic/non-ischemic cardiomyopathy</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note warn">
+        <b>Pitfall:</b> in acute severe MR, a deceptively unimpressive-looking color jet can lead to underestimation of severity. Always correlate with clinical presentation (flash pulmonary edema, new murmur post-MI) and consider TEE if suspicion is high despite modest-appearing TTE color Doppler.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">Reference summary for educational purposes — always correlate with clinical context, guidelines (ASE/EACVI), and integrate multiple parameters rather than relying on any single value.</div>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const sections = document.querySelectorAll('.section');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      sections.forEach(s => s.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.tab).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
