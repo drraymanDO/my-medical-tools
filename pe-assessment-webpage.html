@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PE Assessment Tool</title>
+<style>
+  :root{
+    --navy:#0f2740; --navy2:#173a5e; --teal:#0e9594; --teal-light:#e6f7f6;
+    --accent:#2563eb; --danger:#dc2626; --warn:#d97706; --ok:#16a34a;
+    --bg:#f4f6f9; --card:#ffffff; --border:#e2e8f0; --text:#1e293b; --muted:#64748b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(160deg,var(--bg) 0%,#e9eef5 100%);
+    color:var(--text); min-height:100vh;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:24px 16px 60px;}
+  header{
+    background:linear-gradient(120deg,var(--navy) 0%,var(--navy2) 60%, var(--teal) 130%);
+    color:#fff; padding:28px 24px; border-radius:16px; margin-bottom:20px;
+    box-shadow:0 10px 30px rgba(15,39,64,0.25);
+  }
+  header h1{margin:0 0 4px; font-size:1.5rem;}
+  header p{margin:0; opacity:0.85; font-size:0.9rem;}
+
+  .progress-bar{
+    display:flex; gap:4px; margin-top:18px;
+  }
+  .progress-seg{flex:1; height:6px; border-radius:4px; background:rgba(255,255,255,0.25); transition:background .3s;}
+  .progress-seg.active{background:#fff;}
+  .progress-seg.done{background:var(--teal-light);}
+
+  .step-label{font-size:0.78rem; margin-top:8px; opacity:0.8;}
+
+  .card{
+    background:var(--card); border-radius:16px; padding:26px 26px 22px;
+    box-shadow:0 4px 18px rgba(15,23,42,0.06); border:1px solid var(--border);
+    animation:fadeIn .35s ease;
+  }
+  @keyframes fadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+  h2{margin-top:0; font-size:1.2rem; color:var(--navy);}
+  h2 .badge{
+    display:inline-block; background:var(--teal-light); color:var(--teal); font-size:0.7rem;
+    padding:2px 8px; border-radius:20px; margin-left:8px; vertical-align:middle; font-weight:600;
+  }
+  .sub{color:var(--muted); font-size:0.88rem; margin-top:-6px; margin-bottom:18px;}
+
+  .option-list{display:flex; flex-direction:column; gap:10px;}
+  .opt{
+    display:flex; align-items:flex-start; gap:12px; padding:12px 14px; border:1.5px solid var(--border);
+    border-radius:12px; cursor:pointer; transition:all .15s; background:#fff;
+  }
+  .opt:hover{border-color:var(--accent); background:#f8fafc;}
+  .opt.checked{border-color:var(--accent); background:#eff6ff;}
+  .opt input{margin-top:3px; accent-color:var(--accent); width:17px; height:17px; flex-shrink:0;}
+  .opt .label{font-size:0.93rem; line-height:1.35;}
+  .opt .pts{margin-left:auto; font-size:0.78rem; color:var(--muted); font-weight:600; white-space:nowrap; padding-left:10px;}
+
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:600px){.row2{grid-template-columns:1fr;}}
+
+  label.field-label{display:block; font-size:0.85rem; font-weight:600; color:var(--navy2); margin-bottom:6px;}
+  input[type=text], input[type=number], select, textarea{
+    width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px;
+    font-size:0.92rem; font-family:inherit; background:#fff;
+  }
+  input:focus, select:focus, textarea:focus{outline:none; border-color:var(--accent);}
+  .field{margin-bottom:16px;}
+
+  .radio-inline{display:flex; gap:10px; flex-wrap:wrap;}
+  .radio-inline label{
+    border:1.5px solid var(--border); border-radius:10px; padding:8px 16px; cursor:pointer; font-size:0.88rem;
+    display:flex; align-items:center; gap:6px; transition:all .15s;
+  }
+  .radio-inline input{accent-color:var(--accent);}
+  .radio-inline label.sel{border-color:var(--accent); background:#eff6ff;}
+
+  .score-box{
+    margin-top:18px; padding:16px 18px; border-radius:12px; background:var(--teal-light);
+    border:1px solid #b6e6e4; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+  }
+  .score-box .num{font-size:1.6rem; font-weight:700; color:var(--navy);}
+  .score-box .interp{font-size:0.85rem; font-weight:600; padding:5px 12px; border-radius:20px;}
+  .interp.low{background:#dcfce7; color:#15803d;}
+  .interp.mod{background:#fef3c7; color:#b45309;}
+  .interp.high{background:#fee2e2; color:#b91c1c;}
+
+  .note{
+    font-size:0.82rem; color:var(--muted); background:#f8fafc; border-left:3px solid var(--teal);
+    padding:10px 14px; border-radius:8px; margin-top:14px; line-height:1.5;
+  }
+  .warn-note{border-left-color:var(--warn); background:#fffbeb; color:#92400e;}
+
+  .nav-btns{display:flex; justify-content:space-between; margin-top:22px; gap:10px;}
+  button{
+    font-family:inherit; font-size:0.92rem; font-weight:600; padding:11px 22px; border-radius:10px;
+    border:none; cursor:pointer; transition:transform .1s, box-shadow .2s;
+  }
+  button:active{transform:scale(0.97);}
+  .btn-primary{background:linear-gradient(120deg,var(--accent),#1d4ed8); color:#fff; box-shadow:0 4px 12px rgba(37,99,235,0.3);}
+  .btn-secondary{background:#fff; color:var(--navy2); border:1.5px solid var(--border);}
+  .btn-secondary:hover{background:#f1f5f9;}
+  button:disabled{opacity:0.45; cursor:not-allowed; box-shadow:none;}
+
+  .cat-card{
+    border-radius:14px; padding:20px; margin-top:16px; color:#fff;
+  }
+  .cat-A{background:linear-gradient(120deg,#16a34a,#22c55e);}
+  .cat-B{background:linear-gradient(120deg,#0e9594,#14b8b6);}
+  .cat-C{background:linear-gradient(120deg,#d97706,#f59e0b);}
+  .cat-D{background:linear-gradient(120deg,#ea580c,#f97316);}
+  .cat-E{background:linear-gradient(120deg,#b91c1c,#dc2626);}
+  .cat-card .cat-title{font-size:1.4rem; font-weight:800; margin-bottom:2px;}
+  .cat-card .cat-sub{font-size:0.9rem; opacity:0.92; margin-bottom:10px;}
+  .cat-card ul{margin:8px 0 0; padding-left:20px; font-size:0.87rem; line-height:1.6;}
+
+  .summary-section{margin-bottom:18px;}
+  .summary-section h3{
+    font-size:0.85rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted);
+    margin-bottom:8px; border-bottom:1px solid var(--border); padding-bottom:6px;
+  }
+  .summary-row{display:flex; justify-content:space-between; padding:5px 0; font-size:0.9rem; gap:10px;}
+  .summary-row .k{color:var(--muted);}
+  .summary-row .v{font-weight:600; text-align:right;}
+
+  .print-btn{margin-top:10px;}
+  .disclaimer{
+    text-align:center; font-size:0.75rem; color:var(--muted); margin-top:24px; line-height:1.5;
+  }
+  .checklist-mini{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
+  .checklist-mini label{display:flex; align-items:center; gap:8px; font-size:0.88rem; cursor:pointer;}
+  .checklist-mini input{accent-color:var(--accent); width:16px; height:16px;}
+
+  @media print{
+    header, .nav-btns, .disclaimer{display:none;}
+    body{background:#fff;}
+    .card{box-shadow:none; border:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Pulmonary Embolism Assessment</h1>
+    <p>Step-by-step tool based on the 2026 AHA/ACC/Multisociety Acute PE Guideline</p>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="step-label" id="stepLabel"></div>
+  </header>
+
+  <div class="card" id="cardHost"></div>
+
+  <p class="disclaimer">
+    This tool is a clinical documentation and reasoning aid based on the 2026 AHA/ACC/ACCP/ACEP/CHEST/SCAI/SHM/SIR/SVM/SVN
+    Guideline for the Evaluation and Management of Acute Pulmonary Embolism in Adults. It does not replace clinical judgment,
+    the full guideline text, or local institutional protocols. Not for use as the sole basis for a treatment decision.
+  </p>
+</div>
+
+<script>
+// ---------- State ----------
+const state = {
+  symptoms: {}, riskFactors: {},
+  onAnticoag: null,
+  wells: {}, wellsScore:0,
+  usePerc:false, perc:{}, percNegative:null,
+  ddimerStrategy:null, ddimerValue:'', ddimerThreshold:'', ddimerBelow:null,
+  years:{}, ageInput:'',
+  imaging:'', imagingResult:'',
+  pesiClass:'', spesiScore:'', bova:'', hestia:'',
+  troponin:'', bnp:'', lactate:'',
+  rvDysfunction:'', vitalsSBP:'', vitalsHR:'', vitalsRR:'', vitalsSpo2:'',
+  category:'', modifier:false,
+  anticoagAgent:'', pertActivated:''
+};
+
+let step = 0;
+const steps = ['History','Wells Score','PERC','D-dimer','Imaging','Risk Category','Management','Summary'];
+
+function renderProgress(){
+  const bar = document.getElementById('progressBar');
+  bar.innerHTML = steps.map((s,i)=>{
+    let cls='progress-seg';
+    if(i<step) cls+=' done';
+    if(i===step) cls+=' active';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+  document.getElementById('stepLabel').textContent = `Step ${step+1} of ${steps.length}: ${steps[step]}`;
+}
+
+function nav(html, canBack=true, canNext=true, nextLabel='Continue'){
+  const host = document.getElementById('cardHost');
+  host.innerHTML = html + `
+    <div class="nav-btns">
+      <button class="btn-secondary" onclick="goBack()" ${canBack?'':'disabled'}>← Back</button>
+      <button class="btn-primary" id="nextBtn" onclick="goNext()" ${canNext?'':'disabled'}>${nextLabel} →</button>
+    </div>`;
+  renderProgress();
+}
+
+function goBack(){ if(step>0){ step--; render(); } }
+function goNext(){ if(step<steps.length-1){ step++; render(); } }
+
+function toggleOpt(el){
+  el.classList.toggle('checked');
+  const cb = el.querySelector('input[type=checkbox]');
+  if(cb) cb.checked = !cb.checked;
+}
+
+// ---------- Step 0: History ----------
+function renderHistory(){
+  const symptomList = [
+    ['dyspnea','Dyspnea (acute or gradual)'],
+    ['pleuritic','Pleuritic chest pain'],
+    ['cough','Cough / hemoptysis'],
+    ['syncope','Syncope or presyncope'],
+    ['legswelling','Unilateral leg swelling or pain (possible DVT)'],
+    ['asymptomatic','Asymptomatic — incidental finding on imaging']
+  ];
+  const riskList = [
+    ['surgery','Recent surgery / immobilization (< 4 weeks)'],
+    ['malignancy','Active malignancy'],
+    ['priorvte','Prior VTE'],
+    ['hormonal','Hormonal therapy / pregnancy / postpartum'],
+    ['thrombophilia','Known thrombophilia'],
+    ['travel','Long-distance travel'],
+    ['cvc','Central venous catheter'],
+    ['famhx','Family history of VTE']
+  ];
+  let html = `
+    <h2>Patient History <span class="badge">Step 1</span></h2>
+    <p class="sub">Select all that apply. This informs pretest probability in the next step.</p>
+    <label class="field-label">Presenting symptoms</label>
+    <div class="option-list" id="symptomList">
+      ${symptomList.map(([k,l])=>`
+        <div class="opt ${state.symptoms[k]?'checked':''}" onclick="toggleSymptom('${k}', this)">
+          <input type="checkbox" ${state.symptoms[k]?'checked':''} readonly>
+          <span class="label">${l}</span>
+        </div>`).join('')}
+    </div>
+    <div style="height:18px"></div>
+    <label class="field-label">VTE risk factors</label>
+    <div class="option-list" id="riskList">
+      ${riskList.map(([k,l])=>`
+        <div class="opt ${state.riskFactors[k]?'checked':''}" onclick="toggleRisk('${k}', this)">
+          <input type="checkbox" ${state.riskFactors[k]?'checked':''} readonly>
+          <span class="label">${l}</span>
+        </div>`).join('')}
+    </div>
+    <div style="height:18px"></div>
+    <label class="field-label">Is the patient currently on therapeutic anticoagulation?</label>
+    <div class="radio-inline">
+      <label class="${state.onAnticoag==='yes'?'sel':''}" onclick="setAnticoag('yes')"><input type="radio" name="anticoag" ${state.onAnticoag==='yes'?'checked':''}> Yes</label>
+      <label class="${state.onAnticoag==='no'?'sel':''}" onclick="setAnticoag('no')"><input type="radio" name="anticoag" ${state.onAnticoag==='no'?'checked':''}> No</label>
+    </div>
+    <div class="note">Clinical decision rules and D-dimer strategies have only been validated in patients <strong>not</strong> on therapeutic anticoagulation. Anticoagulation can falsely lower D-dimer results.</div>
+  `;
+  nav(html, false, true);
+}
+function toggleSymptom(k, el){ state.symptoms[k] = !state.symptoms[k]; toggleOpt(el); }
+function toggleRisk(k, el){ state.riskFactors[k] = !state.riskFactors[k]; toggleOpt(el); }
+function setAnticoag(v){ state.onAnticoag = v; renderHistory(); }
+
+// ---------- Step 1: Wells Score ----------
+const wellsItems = [
+  ['dvt','Clinical signs & symptoms of DVT', 3],
+  ['altdx','PE is #1 diagnosis, or equally likely', 3],
+  ['hr','Heart rate > 100 bpm', 1.5],
+  ['immob','Immobilization ≥3 days or surgery in past 4 weeks', 1.5],
+  ['prior','Prior objectively diagnosed DVT/PE', 1.5],
+  ['hemop','Hemoptysis', 1],
+  ['malig','Malignancy (treated within 6 months, or palliative)', 1]
+];
+function calcWells(){
+  return wellsItems.reduce((sum,[k,l,p])=> sum + (state.wells[k]? p : 0), 0);
+}
+function renderWells(){
+  const score = calcWells();
+  state.wellsScore = score;
+  let interpClass='low', interpText='PE Unlikely (<50% probability)';
+  if(score>4){ interpClass='high'; interpText='PE Likely — proceed to imaging'; }
+  else if(score>=2){ interpClass='mod'; interpText='PE Unlikely, but intermediate range'; }
+
+  let html = `
+    <h2>Wells Score <span class="badge">Step 2</span></h2>
+    <p class="sub">Validated clinical decision tool to establish pretest probability. (Revised Geneva score or clinical gestalt may also be used per guideline.)</p>
+    <div class="option-list">
+      ${wellsItems.map(([k,l,p])=>`
+        <div class="opt ${state.wells[k]?'checked':''}" onclick="toggleWells('${k}', this)">
+          <input type="checkbox" ${state.wells[k]?'checked':''} readonly>
+          <span class="label">${l}</span>
+          <span class="pts">${p} pt${p!==1?'s':''}</span>
+        </div>`).join('')}
+    </div>
+    <div class="score-box">
+      <div><div style="font-size:0.8rem;color:var(--muted);">Total Wells Score</div><div class="num">${score}</div></div>
+      <div class="interp ${interpClass}">${interpText}</div>
+    </div>
+    <div class="note">Wells ≤4: PE unlikely, pretest probability &lt;50% → eligible for PERC (if very low risk) or D-dimer strategy.<br>
+    Wells &gt;4: PE likely → proceed directly to imaging (CTPA).</div>
+  `;
+  nav(html, true, true);
+}
+function toggleWells(k, el){ state.wells[k] = !state.wells[k]; toggleOpt(el); renderWells(); }
+
+// ---------- Step 2: PERC ----------
+const percItems = [
+  ['age','Age ≥ 50'],
+  ['hr','Heart rate ≥ 100 bpm'],
+  ['spo2','SpO2 < 95% on room air'],
+  ['hemop','Hemoptysis present'],
+  ['estrogen','Estrogen use'],
+  ['priorvte','Prior DVT/PE'],
+  ['legswelling','Unilateral leg swelling'],
+  ['surgery','Surgery/trauma requiring hospitalization within 4 weeks']
+];
+function renderPerc(){
+  const eligible = state.wellsScore <= 4; // low/intermediate probability
+  if(!eligible){
+    const html = `
+      <h2>PERC Rule <span class="badge">Step 3</span></h2>
+      <div class="note warn-note">PERC does not apply — Wells score is &gt;4 (PE likely). Proceed directly to imaging.</div>
+    `;
+    nav(html, true, true, 'Skip to Imaging');
+    return;
+  }
+  const anyChecked = percItems.some(([k])=>state.perc[k]);
+  state.percNegative = !anyChecked;
+  let html = `
+    <h2>PERC Rule <span class="badge">Step 3</span></h2>
+    <p class="sub">Applies only in low pretest probability patients (Wells ≤4). If <strong>all</strong> criteria are absent, PE can be excluded without D-dimer testing.</p>
+    <div class="option-list">
+      ${percItems.map(([k,l])=>`
+        <div class="opt ${state.perc[k]?'checked':''}" onclick="togglePerc('${k}', this)">
+          <input type="checkbox" ${state.perc[k]?'checked':''} readonly>
+          <span class="label">${l}</span>
+        </div>`).join('')}
+    </div>
+    <div class="score-box">
+      <div style="font-weight:700; color:var(--navy);">${anyChecked? 'PERC Positive' : 'PERC Negative'}</div>
+      <div class="interp ${anyChecked?'mod':'low'}">${anyChecked? 'Proceed to D-dimer / imaging' : 'PE excluded — no further testing needed'}</div>
+    </div>
+  `;
+  nav(html, true, true, anyChecked? 'Continue to D-dimer' : 'Continue');
+}
+function togglePerc(k, el){ state.perc[k] = !state.perc[k]; toggleOpt(el); renderPerc(); }
+
+// ---------- Step 3: D-dimer ----------
+function renderDdimer(){
+  // Skip if PERC negative
+  if(state.wellsScore<=4 && state.percNegative){
+    const html = `
+      <h2>D-dimer Strategy <span class="badge">Step 4</span></h2>
+      <div class="note">Not required — PERC was negative, PE has been excluded without further testing.</div>
+    `;
+    nav(html, true, true, 'Continue to Imaging');
+    return;
+  }
+  if(state.wellsScore > 4){
+    const html = `
+      <h2>D-dimer Strategy <span class="badge">Step 4</span></h2>
+      <div class="note warn-note">D-dimer strategies are intended for pretest probability &lt;50% (Wells ≤6). Given PE-likely pretest probability, proceed directly to imaging.</div>
+    `;
+    nav(html, true, true, 'Skip to Imaging');
+    return;
+  }
+  let html = `
+    <h2>D-dimer Strategy <span class="badge">Step 4</span></h2>
+    <p class="sub">Choose one D-dimer strategy per the 2026 guideline (either is acceptable for pretest probability &lt;50%).</p>
+    <div class="radio-inline" style="margin-bottom:16px;">
+      <label class="${state.ddimerStrategy==='age'?'sel':''}" onclick="setDdimerStrategy('age')"><input type="radio" name="ddstrat" ${state.ddimerStrategy==='age'?'checked':''}> Age-adjusted D-dimer</label>
+      <label class="${state.ddimerStrategy==='years'?'sel':''}" onclick="setDdimerStrategy('years')"><input type="radio" name="ddstrat" ${state.ddimerStrategy==='years'?'checked':''}> YEARS algorithm</label>
+    </div>
+    <div id="ddDynamic"></div>
+  `;
+  nav(html, true, true);
+  renderDdimerDynamic();
+}
+function setDdimerStrategy(v){ state.ddimerStrategy=v; renderDdimer(); }
+function renderDdimerDynamic(){
+  const host = document.getElementById('ddDynamic');
+  if(!host) return;
+  if(state.ddimerStrategy==='age'){
+    const age = parseFloat(state.ageInput)||0;
+    const threshold = age>50 ? (age*10) : 500;
+    host.innerHTML = `
+      <div class="field">
+        <label class="field-label">Patient age (years)</label>
+        <input type="number" value="${state.ageInput}" oninput="state.ageInput=this.value; renderDdimerDynamic();" placeholder="e.g. 68">
+      </div>
+      <div class="field">
+        <label class="field-label">D-dimer result (ng/mL)</label>
+        <input type="number" value="${state.ddimerValue}" oninput="state.ddimerValue=this.value; renderDdimerDynamic();" placeholder="e.g. 620">
+      </div>
+      <div class="note">Threshold (age-adjusted): <strong>${threshold} ng/mL</strong> ${age>50? '(age × 10)' : '(fixed 500, age ≤50)'}</div>
+      ${state.ddimerValue!=='' ? `<div class="score-box"><div class="num" style="font-size:1.1rem;">${state.ddimerValue} ng/mL</div><div class="interp ${parseFloat(state.ddimerValue)<threshold?'low':'high'}">${parseFloat(state.ddimerValue)<threshold? 'Below threshold — PE unlikely, imaging not required':'Above threshold — imaging indicated'}</div></div>` : ''}
+    `;
+  } else if(state.ddimerStrategy==='years'){
+    const yearsItems=[['dvtsign','Clinical signs of DVT'],['hemop','Hemoptysis'],['pelikely','PE is the most likely diagnosis']];
+    const anyYears = yearsItems.some(([k])=>state.years[k]);
+    const threshold = anyYears? 500: 1000;
+    host.innerHTML = `
+      <div class="checklist-mini">
+        ${yearsItems.map(([k,l])=>`<label><input type="checkbox" ${state.years[k]?'checked':''} onchange="state.years['${k}']=this.checked; renderDdimerDynamic();"> ${l}</label>`).join('')}
+      </div>
+      <div class="field" style="margin-top:14px;">
+        <label class="field-label">D-dimer result (ng/mL)</label>
+        <input type="number" value="${state.ddimerValue}" oninput="state.ddimerValue=this.value; renderDdimerDynamic();" placeholder="e.g. 420">
+      </div>
+      <div class="note">YEARS threshold: <strong>${threshold} ng/mL</strong> (${anyYears? '≥1 criterion met':'0 criteria met'})</div>
+      ${state.ddimerValue!=='' ? `<div class="score-box"><div class="num" style="font-size:1.1rem;">${state.ddimerValue} ng/mL</div><div class="interp ${parseFloat(state.ddimerValue)<threshold?'low':'high'}">${parseFloat(state.ddimerValue)<threshold? 'Below threshold — PE unlikely':'Above threshold — imaging indicated'}</div></div>` : ''}
+    `;
+  } else {
+    host.innerHTML = `<div class="note">Select a strategy above.</div>`;
+  }
+}
+
+// ---------- Step 4: Imaging ----------
+function renderImaging(){
+  let html = `
+    <h2>Imaging <span class="badge">Step 5</span></h2>
+    <p class="sub">Select modality and record result.</p>
+    <div class="field">
+      <label class="field-label">Imaging modality</label>
+      <select onchange="state.imaging=this.value;">
+        <option value="">-- select --</option>
+        <option value="ctpa" ${state.imaging==='ctpa'?'selected':''}>CTPA (first-line, most patients)</option>
+        <option value="vq" ${state.imaging==='vq'?'selected':''}>V/Q scan or V/Q SPECT</option>
+        <option value="duplex" ${state.imaging==='duplex'?'selected':''}>Lower extremity venous duplex</option>
+        <option value="none" ${state.imaging==='none'?'selected':''}>No imaging performed (ruled out clinically)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field-label">Imaging result / findings</label>
+      <textarea rows="3" placeholder="e.g. Filling defect in right lower lobe segmental PA, RV/LV ratio 1.3" oninput="state.imagingResult=this.value;">${state.imagingResult}</textarea>
+    </div>
+    <div class="note">Echocardiography is <strong>not recommended</strong> solely to confirm or exclude PE, but is useful for assessing RV function once PE is diagnosed.</div>
+  `;
+  nav(html, true, true);
+}
+
+// ---------- Step 5: Risk Category ----------
+function determineCategory(){
+  const sbp = parseFloat(state.vitalsSBP);
+  const troponinElevated = state.troponin==='elevated';
+  const bnpElevated = state.bnp==='elevated';
+  const rvDysfunction = state.rvDysfunction==='yes';
+  const lowSeverity = state.pesiClass==='I-II' || state.spesiScore==='0' || state.bova==='le4' || state.hestia==='0';
+  const elevatedSeverity = state.pesiClass==='III-V' || state.spesiScore==='ge1' || state.bova==='gt4';
+  const symptomatic = !state.symptoms.asymptomatic;
+
+  if(!symptomatic || state.imaging==='' && state.wellsScore<=4 && state.percNegative){
+    return 'A';
+  }
+  if(!isNaN(sbp) && sbp>0 && sbp<90){
+    return 'E';
+  }
+  if((troponinElevated || bnpElevated || rvDysfunction) && !elevatedSeverity && !isNaN(sbp) && sbp>=90){
+    // has incipient signs but not full criteria for D -> still C by default unless flagged D
+    return 'C';
+  }
+  if(elevatedSeverity || troponinElevated || bnpElevated || rvDysfunction){
+    return 'C';
+  }
+  if(lowSeverity && symptomatic){
+    return 'B';
+  }
+  return '';
+}
+
+const categoryInfo = {
+  A: {title:'Category A — Subclinical', sub:'Incidental PE, asymptomatic', pts:[
+    'Discharge home; hospitalization not required',
+    'Outpatient anticoagulation with follow-up'
+  ]},
+  B: {title:'Category B — Symptomatic, Low Severity', sub:'PESI I–II / sPESI 0 / Bova ≤4 / Hestia 0', pts:[
+    'Consider outpatient management if Hestia/PESI criteria support it',
+    'Structured follow-up arranged',
+    'Anticoagulation per standard protocol'
+  ]},
+  C: {title:'Category C — Symptomatic, Elevated Severity', sub:'Elevated severity score and/or biomarkers and/or RV dysfunction', pts:[
+    'Hospitalize; monitor closely for progression',
+    'PERT consultation reasonable, especially with RV dysfunction or biomarker elevation',
+    'Anticoagulation; reassess frequently for deterioration'
+  ]},
+  D: {title:'Category D — Incipient Cardiopulmonary Failure', sub:'Hemodynamic compromise, not yet persistent hypotension', pts:[
+    'Hospitalize with escalated monitoring (consider ICU/step-down)',
+    'Multidisciplinary PERT discussion',
+    'Consider advanced therapies: systemic thrombolysis, catheter-directed therapy, mechanical thrombectomy'
+  ]},
+  E: {title:'Category E — Cardiopulmonary Failure', sub:'Persistent hypotension / refractory shock', pts:[
+    'ICU-level care, highest monitoring intensity',
+    'Advanced reperfusion therapy reasonable: systemic thrombolysis, catheter-based therapy, mechanical thrombectomy, or surgical embolectomy',
+    'Urgent PERT / multidisciplinary activation'
+  ]}
+};
+
+function renderRiskCategory(){
+  let html = `
+    <h2>Risk Stratification <span class="badge">Step 6</span></h2>
+    <p class="sub">Enter severity scores, biomarkers, and vitals. The AHA/ACC Clinical Category (A–E) will be estimated automatically — assign the <strong>most severe</strong> applicable category, and confirm clinically.</p>
+
+    <div class="row2">
+      <div class="field">
+        <label class="field-label">PESI class</label>
+        <select onchange="state.pesiClass=this.value; renderRiskCategory();">
+          <option value="">-- select --</option>
+          <option value="I-II" ${state.pesiClass==='I-II'?'selected':''}>I–II (low)</option>
+          <option value="III-V" ${state.pesiClass==='III-V'?'selected':''}>III–V (elevated)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">sPESI score</label>
+        <select onchange="state.spesiScore=this.value; renderRiskCategory();">
+          <option value="">-- select --</option>
+          <option value="0" ${state.spesiScore==='0'?'selected':''}>0 (low)</option>
+          <option value="ge1" ${state.spesiScore==='ge1'?'selected':''}>≥1 (elevated)</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label class="field-label">Bova score</label>
+        <select onchange="state.bova=this.value; renderRiskCategory();">
+          <option value="">-- select --</option>
+          <option value="le4" ${state.bova==='le4'?'selected':''}>≤4 (low)</option>
+          <option value="gt4" ${state.bova==='gt4'?'selected':''}>&gt;4 (elevated)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Hestia criteria</label>
+        <select onchange="state.hestia=this.value; renderRiskCategory();">
+          <option value="">-- select --</option>
+          <option value="0" ${state.hestia==='0'?'selected':''}>All negative (0) — outpatient eligible</option>
+          <option value="ge1" ${state.hestia==='ge1'?'selected':''}>≥1 positive</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label class="field-label">Troponin</label>
+        <select onchange="state.troponin=this.value; renderRiskCategory();">
+          <option value="">-- select --</option>
+          <option value="normal" ${state.troponin==='normal'?'selected':''}>Normal</option>
+          <option value="elevated" ${state.troponin==='elevated'?'selected':''}>Elevated</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">BNP / NT-proBNP</label>
+        <select onchange="state.bnp=this.value; renderRiskCategory();">
+          <option value="">-- select --</option>
+          <option value="normal" ${state.bnp==='normal'?'selected':''}>Normal</option>
+          <option value="elevated" ${state.bnp==='elevated'?'selected':''}>Elevated</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">RV dysfunction on imaging (RV/LV ratio, TAPSE, septal flattening)</label>
+      <div class="radio-inline">
+        <label class="${state.rvDysfunction==='yes'?'sel':''}" onclick="state.rvDysfunction='yes'; renderRiskCategory();"><input type="radio" name="rv" ${state.rvDysfunction==='yes'?'checked':''}> Present</label>
+        <label class="${state.rvDysfunction==='no'?'sel':''}" onclick="state.rvDysfunction='no'; renderRiskCategory();"><input type="radio" name="rv" ${state.rvDysfunction==='no'?'checked':''}> Absent</label>
+      </div>
+    </div>
+
+    <label class="field-label">Vital signs</label>
+    <div class="row2">
+      <div class="field">
+        <input type="number" placeholder="Systolic BP (mmHg)" value="${state.vitalsSBP}" oninput="state.vitalsSBP=this.value; renderRiskCategory();">
+      </div>
+      <div class="field">
+        <input type="number" placeholder="Heart rate (bpm)" value="${state.vitalsHR}" oninput="state.vitalsHR=this.value;">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <input type="number" placeholder="Respiratory rate" value="${state.vitalsRR}" oninput="state.vitalsRR=this.value;">
+      </div>
+      <div class="field">
+        <input type="number" placeholder="SpO2 (%)" value="${state.vitalsSpo2}" oninput="state.vitalsSpo2=this.value;">
+      </div>
+    </div>
+  `;
+
+  const cat = determineCategory();
+  state.category = cat;
+  if(cat && categoryInfo[cat]){
+    const info = categoryInfo[cat];
+    html += `
+      <div class="cat-card cat-${cat}">
+        <div class="cat-title">${info.title}</div>
+        <div class="cat-sub">${info.sub}</div>
+        <ul>${info.pts.map(p=>`<li>${p}</li>`).join('')}</ul>
+      </div>
+      <div class="note">Category shown is a preliminary estimate based on entered fields. Confirm against full guideline subcategory criteria (e.g., C1/C2/C3, D1/D2, E1) and clinical gestalt.</div>
+    `;
+  } else {
+    html += `<div class="note warn-note">Enter more fields above (severity score, biomarkers, or vitals) to estimate a category.</div>`;
+  }
+
+  nav(html, true, !!cat, cat? 'Continue to Management' : 'Continue');
+}
+
+// ---------- Step 6: Management ----------
+function renderManagement(){
+  const cat = state.category || '?';
+  const info = categoryInfo[cat] || {title:'Category not determined', pts:[]};
+  let html = `
+    <h2>Management & Disposition <span class="badge">Step 7</span></h2>
+    <div class="cat-card cat-${cat}">
+      <div class="cat-title">${info.title}</div>
+      <ul>${(info.pts||[]).map(p=>`<li>${p}</li>`).join('')}</ul>
+    </div>
+
+    <div class="field" style="margin-top:18px;">
+      <label class="field-label">PERT (PE Response Team) activated?</label>
+      <div class="radio-inline">
+        <label class="${state.pertActivated==='yes'?'sel':''}" onclick="state.pertActivated='yes'; renderManagement();"><input type="radio" name="pert" ${state.pertActivated==='yes'?'checked':''}> Yes</label>
+        <label class="${state.pertActivated==='no'?'sel':''}" onclick="state.pertActivated='no'; renderManagement();"><input type="radio" name="pert" ${state.pertActivated==='no'?'checked':''}> No</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Anticoagulation agent selected</label>
+      <select onchange="state.anticoagAgent=this.value;">
+        <option value="">-- select --</option>
+        <option value="doac" ${state.anticoagAgent==='doac'?'selected':''}>DOAC (preferred over warfarin per 2026 guideline)</option>
+        <option value="lmwh" ${state.anticoagAgent==='lmwh'?'selected':''}>LMWH (preferred over UFH, absent contraindication)</option>
+        <option value="ufh" ${state.anticoagAgent==='ufh'?'selected':''}>Unfractionated heparin</option>
+        <option value="warfarin" ${state.anticoagAgent==='warfarin'?'selected':''}>Warfarin</option>
+        <option value="none" ${state.anticoagAgent==='none'?'selected':''}>Contraindicated / IVC filter considered</option>
+      </select>
+    </div>
+    <div class="note">2026 guideline direction: DOACs are generally preferred over warfarin, and LMWH is preferred over UFH, absent contraindication.</div>
+  `;
+  nav(html, true, true, 'Continue to Summary');
+}
+
+// ---------- Step 7: Summary ----------
+function renderSummary(){
+  const wellsInterp = state.wellsScore>4? 'PE Likely' : 'PE Unlikely';
+  const cat = state.category || 'Not determined';
+  const catTitle = categoryInfo[cat]? categoryInfo[cat].title : cat;
+
+  let html = `
+    <h2>Assessment Summary <span class="badge">Complete</span></h2>
+    <p class="sub">Review below. Use "Print / Save" to export this summary for documentation.</p>
+
+    <div class="summary-section">
+      <h3>Pretest Probability</h3>
+      <div class="summary-row"><span class="k">Wells Score</span><span class="v">${state.wellsScore} — ${wellsInterp}</span></div>
+      ${state.wellsScore<=4 ? `<div class="summary-row"><span class="k">PERC</span><span class="v">${state.percNegative? 'Negative (PE excluded)' : 'Positive'}</span></div>` : ''}
+    </div>
+
+    <div class="summary-section">
+      <h3>D-dimer</h3>
+      <div class="summary-row"><span class="k">Strategy</span><span class="v">${state.ddimerStrategy==='age'?'Age-adjusted':state.ddimerStrategy==='years'?'YEARS algorithm':'N/A'}</span></div>
+      ${state.ddimerValue? `<div class="summary-row"><span class="k">Result</span><span class="v">${state.ddimerValue} ng/mL</span></div>` : ''}
+    </div>
+
+    <div class="summary-section">
+      <h3>Imaging</h3>
+      <div class="summary-row"><span class="k">Modality</span><span class="v">${state.imaging || 'N/A'}</span></div>
+      <div class="summary-row"><span class="k">Findings</span><span class="v">${state.imagingResult || '—'}</span></div>
+    </div>
+
+    <div class="summary-section">
+      <h3>Risk Category</h3>
+      <div class="summary-row"><span class="k">AHA/ACC Category</span><span class="v">${catTitle}</span></div>
+      <div class="summary-row"><span class="k">Troponin</span><span class="v">${state.troponin||'—'}</span></div>
+      <div class="summary-row"><span class="k">BNP</span><span class="v">${state.bnp||'—'}</span></div>
+      <div class="summary-row"><span class="k">RV dysfunction</span><span class="v">${state.rvDysfunction||'—'}</span></div>
+      <div class="summary-row"><span class="k">SBP / HR / RR / SpO2</span><span class="v">${state.vitalsSBP||'—'} / ${state.vitalsHR||'—'} / ${state.vitalsRR||'—'} / ${state.vitalsSpo2||'—'}</span></div>
+    </div>
+
+    <div class="summary-section">
+      <h3>Management</h3>
+      <div class="summary-row"><span class="k">PERT activated</span><span class="v">${state.pertActivated||'—'}</span></div>
+      <div class="summary-row"><span class="k">Anticoagulation</span><span class="v">${state.anticoagAgent||'—'}</span></div>
+    </div>
+
+    <button class="btn-secondary print-btn" onclick="window.print()">🖨️ Print / Save Summary</button>
+    <div class="note" style="margin-top:16px;">Reference: Creager MA, Barnes GD, Giri J, et al. 2026 AHA/ACC/ACCP/ACEP/CHEST/SCAI/SHM/SIR/SVM/SVN Guideline for the Evaluation and Management of Acute Pulmonary Embolism in Adults. Circulation. 2026;153(12):e977–e1051.</div>
+  `;
+  nav(html, true, false);
+  document.getElementById('nextBtn').style.display='none';
+}
+
+// ---------- Router ----------
+function render(){
+  window.scrollTo({top:0, behavior:'smooth'});
+  switch(step){
+    case 0: renderHistory(); break;
+    case 1: renderWells(); break;
+    case 2: renderPerc(); break;
+    case 3: renderDdimer(); break;
+    case 4: renderImaging(); break;
+    case 5: renderRiskCategory(); break;
+    case 6: renderManagement(); break;
+    case 7: renderSummary(); break;
+  }
+}
+
+render();
+</script>
+</body>
+</html>
