@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Echo Review Checklist</title>
+<style>
+  :root {
+    --normal: #1a7f5a; --mild: #4a8fc9; --mod: #c98a1b; --severe: #c22e2e;
+    --card: #17212c; --border: #263340; --text: #e6edf3; --muted: #9db0c0; --accent:#4a8fc9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px 14px 80px;
+    background: linear-gradient(180deg, #0b1218, #0f1720);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 1.45rem; margin-bottom: 2px; }
+  .subtitle { color: var(--muted); font-size: 0.87rem; margin-bottom: 14px; }
+
+  .toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; position: sticky; top: 0; z-index: 20; padding: 10px 0; background: #0b1218cc; backdrop-filter: blur(6px); }
+  .toolbar input[type=text] { flex:1; min-width:160px; background:#0f1720; border:1px solid var(--border); border-radius:8px; padding:9px 12px; color:var(--text); font-size:0.88rem; }
+  .btn { padding:9px 14px; border-radius:8px; border:1px solid var(--border); background:#0f1720; color:var(--text); font-weight:600; font-size:0.85rem; cursor:pointer; white-space:nowrap; }
+  .btn.primary { background: linear-gradient(135deg, #4a8fc9, #3a6fa8); border:none; }
+  .btn.danger { color: var(--severe); }
+  .btn:hover { opacity:0.9; }
+
+  .progress-bar { height:6px; background:#101820; border-radius:4px; overflow:hidden; margin-bottom:20px; border:1px solid var(--border); }
+  .progress-fill { height:100%; background: linear-gradient(90deg,#4a8fc9,#1a7f5a); width:0%; transition: width 0.2s; }
+  .progress-label { font-size:0.75rem; color:var(--muted); margin-bottom: 4px; display:flex; justify-content:space-between; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 14px; overflow: hidden; }
+  .section-header { padding: 14px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; }
+  .section-header:hover { background: rgba(255,255,255,0.02); }
+  .section-title { font-weight:700; font-size:0.98rem; display:flex; align-items:center; gap:10px; }
+  .section-count { font-size:0.72rem; color:var(--muted); font-weight:600; background:#0f1720; border:1px solid var(--border); padding:2px 9px; border-radius:20px; }
+  .section-count.complete { color: var(--normal); border-color: rgba(26,127,90,0.4); }
+  .chevron { transition: transform 0.15s; color: var(--muted); font-size:0.8rem; }
+  .section.open .chevron { transform: rotate(90deg); }
+  .section-body { display:none; padding: 4px 18px 18px; }
+  .section.open .section-body { display: block; }
+
+  .item { padding: 12px 0; border-top: 1px solid var(--border); }
+  .item:first-child { border-top: none; }
+  .item-label { font-size: 0.87rem; font-weight: 600; margin-bottom: 8px; display:flex; align-items:center; gap:8px; }
+  .item-label input[type=checkbox] { width:16px; height:16px; accent-color: var(--accent); cursor:pointer; }
+
+  .chip-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  .chip { padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:#0f1720; color:var(--muted); font-size:0.78rem; cursor:pointer; font-weight:600; }
+  .chip.selected { border-color:#4a8fc9; background: rgba(74,143,201,0.15); color: var(--text); }
+  .chip.selected.sev-mild { border-color: var(--mild); background: rgba(74,143,201,0.15); color: var(--mild); }
+  .chip.selected.sev-mod { border-color: var(--mod); background: rgba(201,138,27,0.15); color: var(--mod); }
+  .chip.selected.sev-severe { border-color: var(--severe); background: rgba(194,46,46,0.15); color: var(--severe); }
+  .chip.selected.sev-normal { border-color: var(--normal); background: rgba(26,127,90,0.15); color: var(--normal); }
+  .vis-row { display:flex; gap:6px; margin-bottom:10px; }
+  .vis-chip { padding:4px 10px; border-radius:14px; border:1px dashed var(--border); background:transparent; color:var(--muted); font-size:0.72rem; cursor:pointer; font-weight:600; }
+  .vis-chip.selected.vis-well { border-style:solid; border-color: var(--normal); background: rgba(26,127,90,0.12); color: var(--normal); }
+  .vis-chip.selected.vis-poor { border-style:solid; border-color: var(--mod); background: rgba(201,138,27,0.12); color: var(--mod); }
+  .vis-chip.selected.vis-verypoor { border-style:solid; border-color: #d1631e; background: rgba(209,99,30,0.12); color: #d1631e; }
+  .num-input-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .num-input-row input[type=number] { width:90px; background:#0f1720; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:0.9rem; font-family: inherit; }
+  .num-input-row input[type=number]:focus { outline:none; border-color:#4a8fc9; }
+  .num-input-row select { background:#0f1720; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:0.82rem; font-family: inherit; }
+  .num-input-row .unit-label { font-size:0.8rem; color:var(--muted); }
+  .comment-block { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); }
+  .comment-block label { font-size: 0.8rem; color: var(--muted); font-weight: 600; display:block; margin-bottom:8px; }
+  .comment-block textarea { width:100%; background:#0f1720; border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text); font-size:0.85rem; font-family: inherit; resize: vertical; min-height: 60px; }
+  .comment-block textarea::placeholder { color:#4a5a6a; }
+  .vis-chip.selected.vis-notseen { border-style:solid; border-color: var(--severe); background: rgba(194,46,46,0.12); color: var(--severe); }
+
+  .note-input { width:100%; background:#0f1720; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:0.83rem; font-family: inherit; resize: vertical; min-height: 34px; }
+  .note-input::placeholder { color:#4a5a6a; }
+
+  .flag-badge { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; padding:2px 8px; border-radius:10px; background: rgba(194,46,46,0.15); color: var(--severe); border:1px solid rgba(194,46,46,0.3); margin-left:auto; }
+
+  .summary-box { background:#0f1720; border:1px solid var(--border); border-radius:10px; padding:14px 16px; font-size:0.85rem; white-space:pre-wrap; font-family: ui-monospace, monospace; max-height: 420px; overflow-y:auto; margin-top:10px; }
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:100; align-items:flex-start; justify-content:center; padding: 40px 16px; overflow-y:auto; }
+  .modal-overlay.show { display:flex; }
+  .modal { background: var(--card); border:1px solid var(--border); border-radius:14px; padding:22px; max-width:700px; width:100%; }
+  .modal h2 { margin-top:0; font-size:1.1rem; }
+  .modal-actions { display:flex; gap:8px; margin-top:14px; }
+
+  .saved-flag { font-size:0.78rem; color: var(--normal); margin-top:6px; display:none; }
+  .footer { margin-top:26px; padding-top:14px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--muted); text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Echo Review Checklist</h1>
+  <div class="subtitle">Work through each section before finalizing the report — mark visualization quality independently from findings. Nothing here replaces clinical judgment or the full study review.</div>
+
+  <div class="toolbar">
+    <input type="text" id="patient-tag" placeholder="Optional label (e.g. MRN, room #, accession) — not saved after you finish">
+    <button class="btn" onclick="openSummary()">📋 Generate Summary</button>
+    <button class="btn danger" onclick="clearAll()">Clear / New Study</button>
+  </div>
+
+  <div class="progress-label"><span>Progress</span><span id="progress-text">0 / 0 items reviewed</span></div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="saved-flag" id="saved-flag">✓ Autosaved</div>
+  <div class="saved-flag" id="error-flag" style="color: var(--severe); display:none;">⚠ Autosave failed — your work is still on this screen, but won't survive a refresh. <button class="btn" style="padding:3px 10px; font-size:0.72rem;" onclick="retrySave()">Retry Save</button></div>
+
+  <div id="sections-container"></div>
+
+  <div class="footer">Echo Review Checklist — a completeness aid for reading studies. Always correlate with images, prior studies, and clinical context.</div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h2>Report Draft Summary</h2>
+    <div class="subtitle">Copy this into your report as a starting point — edit freely.</div>
+    <div class="summary-box" id="summary-text"></div>
+    <div class="modal-actions">
+      <button class="btn primary" onclick="copySummary()">Copy to Clipboard</button>
+      <button class="btn" onclick="closeSummary()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============== CHECKLIST DEFINITION ==============
+const SECTIONS = [
+  {
+    id: 'lv', title: 'Left Ventricle',
+    items: [
+      { id: 'lv_size', label: 'LV Size', type: 'chips', options: ['Normal','Mildly Dilated','Moderately Dilated','Severely Dilated'], sevMap:{'Normal':'normal','Mildly Dilated':'mild','Moderately Dilated':'mod','Severely Dilated':'severe'} },
+      { id: 'ef_value', label: 'Ejection Fraction (EF)', type: 'number', unit: '%', methodOptions: ['Visual estimate','Simpson\'s biplane','3D echo','Other'] },
+      { id: 'lvh', label: 'LV Wall Thickness / LVH', type: 'chips', options: ['Normal','Mild LVH','Moderate LVH','Severe LVH'], sevMap:{'Normal':'normal','Mild LVH':'mild','Moderate LVH':'mod','Severe LVH':'severe'} },
+      { id: 'lv_geometry', label: 'LV Geometry Pattern', type: 'chips', options: ['Normal','Concentric Remodeling','Concentric Hypertrophy','Eccentric Hypertrophy'] },
+      { id: 'sigmoid_septum', label: 'Sigmoid Septum', type: 'chips', options: ['Absent','Present'], flagIf:'Present', note:true, notePlaceholder:'Basal septal thickness if measured' },
+      { id: 'lv_function', label: 'LV Systolic Function (visual/EF)', type: 'chips', options: ['Normal','Mildly Reduced','Moderately Reduced','Severely Reduced'], sevMap:{'Normal':'normal','Mildly Reduced':'mild','Moderately Reduced':'mod','Severely Reduced':'severe'}, note:true, notePlaceholder:'EF estimate (%), method (visual/Simpson\'s)' },
+      { id: 'gls', label: 'LV Global Longitudinal Strain (GLS)', type: 'chips', options: ['Normal (<-18%)','Mildly Reduced','Moderately Reduced','Severely Reduced','Not Assessed'], sevMap:{'Normal (<-18%)':'normal','Mildly Reduced':'mild','Moderately Reduced':'mod','Severely Reduced':'severe'}, note:true, notePlaceholder:'Actual GLS value (%), vendor/software' },
+      { id: 'rwma', label: 'Regional Wall Motion Abnormality', type: 'chips', options: ['None','Present'], note:true, notePlaceholder:'Location/territory if present', flagIf:'Present' },
+    ]
+  },
+  {
+    id: 'diastology', title: 'Diastolic Function',
+    items: [
+      { id: 'mitral_inflow', label: 'Mitral Inflow Pattern', type: 'chips', options: ['Normal','Impaired Relaxation','Pseudonormal','Restrictive'], note:true, notePlaceholder:'E, A, E/A ratio, DT (ms)' },
+      { id: 'septal_e', label: "Septal e' Velocity", type: 'chips', options: ['Normal (≥7 cm/s)','Reduced (<7 cm/s)'], flagIf:'Reduced (<7 cm/s)', note:true, notePlaceholder:'Actual value (cm/s)' },
+      { id: 'lateral_e', label: "Lateral e' Velocity", type: 'chips', options: ['Normal (≥10 cm/s)','Reduced (<10 cm/s)'], flagIf:'Reduced (<10 cm/s)', note:true, notePlaceholder:'Actual value (cm/s)' },
+      { id: 'avg_ee', label: "Average E/e' Ratio", type: 'chips', options: ['Normal (<8)','Indeterminate (8-14)','Elevated (>14)'], sevMap:{'Normal (<8)':'normal','Indeterminate (8-14)':'mild','Elevated (>14)':'severe'}, flagIf:'Elevated (>14)', note:true, notePlaceholder:'Actual E/e\' value' },
+      { id: 'la_vol_diastology', label: 'LA Volume Index', type: 'chips', options: ['Normal (≤34 mL/m²)','Elevated (>34 mL/m²)'], flagIf:'Elevated (>34 mL/m²)', note:true, notePlaceholder:'Actual value (mL/m²)' },
+      { id: 'tr_velocity', label: 'Peak TR Velocity', type: 'chips', options: ['Normal (≤2.8 m/s)','Elevated (>2.8 m/s)'], flagIf:'Elevated (>2.8 m/s)', note:true, notePlaceholder:'Actual value (m/s)' },
+      { id: 'pv_flow', label: 'Pulmonary Vein Flow (if assessed)', type: 'chips', options: ['Not Assessed','S-dominant','Blunted','D-dominant / S<D','Ar-A duration prolonged'] },
+      { id: 'diastolic_grade', label: 'Overall Diastolic Function Grade', type: 'chips', options: ['Normal','Grade I (Impaired Relaxation)','Grade II (Pseudonormal)','Grade III (Restrictive)','Indeterminate'], sevMap:{'Normal':'normal','Grade I (Impaired Relaxation)':'mild','Grade II (Pseudonormal)':'mod','Grade III (Restrictive)':'severe','Indeterminate':'mild'}, flagIf:'Grade III (Restrictive)' },
+    ]
+  },
+  {
+    id: 'la', title: 'Left Atrium',
+    items: [
+      { id: 'la_size', label: 'LA Size', type: 'chips', options: ['Normal','Mildly Dilated','Moderately Dilated','Severely Dilated'], sevMap:{'Normal':'normal','Mildly Dilated':'mild','Moderately Dilated':'mod','Severely Dilated':'severe'}, note:true, notePlaceholder:'LA diameter/volume index if measured' },
+    ]
+  },
+  {
+    id: 'rv', title: 'Right Ventricle',
+    items: [
+      { id: 'rv_size', label: 'RV Size', type: 'chips', options: ['Normal','Mildly Dilated','Moderately Dilated','Severely Dilated'], sevMap:{'Normal':'normal','Mildly Dilated':'mild','Moderately Dilated':'mod','Severely Dilated':'severe'} },
+      { id: 'rv_function', label: 'RV Function (TAPSE/visual)', type: 'chips', options: ['Normal','Reduced'], sevMap:{'Normal':'normal','Reduced':'severe'}, flagIf:'Reduced', note:true, notePlaceholder:'TAPSE value, S\' if measured' },
+      { id: 'rv_strain', label: 'RV Free Wall Strain', type: 'chips', options: ['Normal (<-20%)','Mildly Reduced','Moderately Reduced','Severely Reduced','Not Assessed'], sevMap:{'Normal (<-20%)':'normal','Mildly Reduced':'mild','Moderately Reduced':'mod','Severely Reduced':'severe'}, note:true, notePlaceholder:'Actual RVFWSL value (%)' },
+      { id: 'rv_wall', label: 'RV Wall Thickness', type: 'chips', options: ['Normal','Increased'], flagIf:'Increased' },
+      { id: 'rvsp', label: 'Estimated RVSP', type: 'number', unit: ' mmHg', methodOptions: ['TR jet + estimated RAP','TR jet + IVC-based RAP','Other'], note2:true, note2Placeholder:'TR Vmax (m/s) and RAP estimate used' },
+    ]
+  },
+  {
+    id: 'ra', title: 'Right Atrium',
+    items: [
+      { id: 'ra_size', label: 'RA Size', type: 'chips', options: ['Normal','Dilated'], sevMap:{'Normal':'normal','Dilated':'severe'}, flagIf:'Dilated' },
+    ]
+  },
+  {
+    id: 'av', title: 'Aortic Valve', sectionComment: true,
+    items: [
+      { id: 'av_leaflets', label: 'Leaflet Morphology', type: 'chips', options: ['Trileaflet','Probably Trileaflet','Bicuspid','Unicuspid','Indeterminate'], flagIf:'Bicuspid' },
+      { id: 'av_restriction_rcc', label: 'Right Coronary Cusp Restriction', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, flagIf:'Severe' },
+      { id: 'av_restriction_lcc', label: 'Left Coronary Cusp Restriction', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, flagIf:'Severe' },
+      { id: 'av_restriction_ncc', label: 'Non-Coronary Cusp Restriction', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, flagIf:'Severe' },
+      { id: 'av_calc_rcc', label: 'Right Coronary Cusp Calcification', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, flagIf:'Severe' },
+      { id: 'av_calc_lcc', label: 'Left Coronary Cusp Calcification', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, flagIf:'Severe' },
+      { id: 'av_calc_ncc', label: 'Non-Coronary Cusp Calcification', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, flagIf:'Severe' },
+      { id: 'av_thickening', label: 'Leaflet Thickening / Calcification', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'} },
+      { id: 'av_stenosis', label: 'Aortic Stenosis', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, note:true, notePlaceholder:'Vmax, mean gradient, AVA if measured', flagIf:'Severe' },
+      { id: 'av_regurg', label: 'Aortic Regurgitation', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, note:true, notePlaceholder:'Vena contracta, PHT if measured', flagIf:'Severe' },
+    ]
+  },
+  {
+    id: 'mv', title: 'Mitral Valve', sectionComment: true,
+    items: [
+      { id: 'mv_structure', label: 'Leaflet Structure', type: 'chips', options: ['Normal','Prolapse','Flail','Rheumatic'], flagIf:'Flail' },
+      { id: 'mv_restriction_ant', label: 'Anterior Leaflet Restriction', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, flagIf:'Severe' },
+      { id: 'mv_restriction_post', label: 'Posterior Leaflet Restriction', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, flagIf:'Severe' },
+      { id: 'mv_calc_ant', label: 'Anterior Leaflet Calcification', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, flagIf:'Severe' },
+      { id: 'mv_calc_post', label: 'Posterior Leaflet Calcification', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, flagIf:'Severe' },
+      { id: 'mv_thickening', label: 'Leaflet Thickening', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, flagIf:'Severe' },
+      { id: 'mv_calcification', label: 'Leaflet Calcification', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, flagIf:'Severe' },
+      { id: 'mv_annular_calc', label: 'Mitral Annular Calcification', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, flagIf:'Severe' },
+      { id: 'mv_stenosis', label: 'Mitral Stenosis', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, note:true, notePlaceholder:'MVA, mean gradient if measured', flagIf:'Severe' },
+      { id: 'mv_regurg', label: 'Mitral Regurgitation', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, note:true, notePlaceholder:'Vena contracta, EROA, primary vs secondary', flagIf:'Severe' },
+    ]
+  },
+  {
+    id: 'tv', title: 'Tricuspid Valve', sectionComment: true,
+    items: [
+      { id: 'tv_structure', label: 'Leaflet Structure', type: 'chips', options: ['Normal','Abnormal'] },
+      { id: 'tv_regurg', label: 'Tricuspid Regurgitation', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'}, note:true, notePlaceholder:'TR jet velocity, estimated PASP', flagIf:'Severe' },
+    ]
+  },
+  {
+    id: 'pv', title: 'Pulmonic Valve', sectionComment: true,
+    items: [
+      { id: 'pv_structure', label: 'Leaflet Structure', type: 'chips', options: ['Normal','Abnormal'] },
+      { id: 'pv_stenosis', label: 'Pulmonic Stenosis', type: 'chips', options: ['None','Present'], flagIf:'Present' },
+      { id: 'pv_regurg', label: 'Pulmonic Regurgitation', type: 'chips', options: ['None','Mild','Moderate','Severe'], sevMap:{'None':'normal','Mild':'mild','Moderate':'mod','Severe':'severe'} },
+    ]
+  },
+  {
+    id: 'aorta', title: 'Aorta',
+    items: [
+      { id: 'ao_root', label: 'Aortic Root (Sinuses of Valsalva)', type: 'chips', options: ['Normal','Mildly Dilated','Moderately Dilated','Severely Dilated'], sevMap:{'Normal':'normal','Mildly Dilated':'mild','Moderately Dilated':'mod','Severely Dilated':'severe'}, note:true, notePlaceholder:'Measurement in cm' },
+      { id: 'ao_ascending', label: 'Ascending Aorta', type: 'chips', options: ['Normal','Mildly Dilated','Moderately Dilated','Severely Dilated'], sevMap:{'Normal':'normal','Mildly Dilated':'mild','Moderately Dilated':'mod','Severely Dilated':'severe'}, note:true, notePlaceholder:'Measurement in cm', flagIf:'Severely Dilated' },
+    ]
+  },
+  {
+    id: 'pericardium', title: 'Pericardium & IVC',
+    items: [
+      { id: 'effusion', label: 'Pericardial Effusion', type: 'chips', options: ['None','Small','Moderate','Large'], sevMap:{'None':'normal','Small':'mild','Moderate':'mod','Large':'severe'}, flagIf:'Large' },
+      { id: 'tamponade', label: 'Tamponade Physiology', type: 'chips', options: ['None','Present'], flagIf:'Present' },
+      { id: 'ivc_size', label: 'IVC Size', type: 'chips', options: ['Small','Normal','Dilated'], sevMap:{'Small':'normal','Normal':'normal','Dilated':'severe'}, flagIf:'Dilated', note:true, notePlaceholder:'IVC diameter (cm)' },
+      { id: 'ivc_collapse', label: 'IVC Collapsibility', type: 'chips', options: ['Collapses','Does Not Collapse'], flagIf:'Does Not Collapse', note:true, notePlaceholder:'% collapse with sniff/inspiration' },
+    ]
+  },
+  {
+    id: 'other', title: 'Other Findings',
+    items: [
+      { id: 'masses', label: 'Masses / Thrombus', type: 'chips', options: ['None','Present'], note:true, notePlaceholder:'Location, size, characteristics', flagIf:'Present' },
+      { id: 'shunt', label: 'Intracardiac Shunt', type: 'chips', options: ['None','Present'], note:true, notePlaceholder:'Type, location', flagIf:'Present' },
+      { id: 'congenital', label: 'Congenital Findings', type: 'chips', options: ['None','Present'], note:true, notePlaceholder:'Description' },
+    ]
+  },
+  {
+    id: 'quality', title: 'Study Quality',
+    items: [
+      { id: 'img_quality', label: 'Image Quality', type: 'chips', options: ['Good','Adequate','Limited','Poor'], sevMap:{'Good':'normal','Adequate':'normal','Limited':'mild','Poor':'severe'} },
+      { id: 'views', label: 'All Standard Views Obtained', type: 'chips', options: ['Yes','No — Limited'], note:true, notePlaceholder:'Which views missing/suboptimal', flagIf:'No — Limited' },
+    ]
+  },
+];
+
+// ============== STATE ==============
+let STATE = {};
+const STORAGE_KEY = 'echo-review-checklist-state';
+
+function emptyState() {
+  const s = {};
+  SECTIONS.forEach(sec => {
+    sec.items.forEach(it => {
+      s[it.id] = { value: null, note: '', note2: '', vis: null };
+    });
+    if (sec.sectionComment) {
+      s['__comment_' + sec.id] = '';
+    }
+  });
+  return s;
+}
+
+async function loadState() {
+  try {
+    const result = await window.storage.get(STORAGE_KEY, false);
+    if (result && result.value) {
+      const parsed = JSON.parse(result.value);
+      STATE = Object.assign(emptyState(), parsed);
+      return;
+    }
+  } catch (e) { /* no saved state yet */ }
+  STATE = emptyState();
+}
+
+let saveTimeout = null;
+let lastSaveFailed = false;
+
+function scheduleSave() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(doSave, 500);
+}
+
+async function doSave() {
+  try {
+    await window.storage.set(STORAGE_KEY, JSON.stringify(STATE), false);
+    lastSaveFailed = false;
+    document.getElementById('error-flag').style.display = 'none';
+    const flag = document.getElementById('saved-flag');
+    flag.style.display = 'block';
+    setTimeout(() => flag.style.display = 'none', 1500);
+  } catch (e) {
+    console.error('Autosave failed', e);
+    lastSaveFailed = true;
+    document.getElementById('saved-flag').style.display = 'none';
+    document.getElementById('error-flag').style.display = 'block';
+  }
+}
+
+function retrySave() {
+  doSave();
+}
+
+// Warn before leaving the page if there's unsaved data
+window.addEventListener('beforeunload', (e) => {
+  if (lastSaveFailed) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+// ============== RENDER ==============
+let openSections = new Set(); // all closed by default
+
+function render() {
+  const container = document.getElementById('sections-container');
+  container.innerHTML = '';
+
+  SECTIONS.forEach(sec => {
+    const total = sec.items.length;
+    const done = sec.items.filter(it => {
+      const st = STATE[it.id];
+      return st && ((st.value !== null && st.value !== '') || st.vis === 'notseen');
+    }).length;
+    const isOpen = openSections.has(sec.id);
+
+    const secEl = document.createElement('div');
+    secEl.className = 'section' + (isOpen ? ' open' : '');
+
+    const header = document.createElement('div');
+    header.className = 'section-header';
+    header.onclick = () => { toggleSection(sec.id); };
+    header.innerHTML = `
+      <div class="section-title"><span class="chevron">▶</span> ${sec.title}</div>
+      <div class="section-count ${done === total ? 'complete' : ''}">${done}/${total}</div>
+    `;
+    secEl.appendChild(header);
+
+    const body = document.createElement('div');
+    body.className = 'section-body';
+
+    sec.items.forEach(it => {
+      const itemEl = document.createElement('div');
+      itemEl.className = 'item';
+
+      const flagged = it.flagIf && STATE[it.id] && STATE[it.id].value === it.flagIf;
+
+      let labelHtml = `<div class="item-label">${it.label}`;
+      if (flagged) labelHtml += `<span class="flag-badge">Flag</span>`;
+      labelHtml += `</div>`;
+      itemEl.innerHTML = labelHtml;
+
+      const visRow = document.createElement('div');
+      visRow.className = 'vis-row';
+      const visOptions = [
+        { key: 'well', label: 'Well Visualized' },
+        { key: 'poor', label: 'Not Well Visualized' },
+        { key: 'verypoor', label: 'Poorly Visualized' },
+        { key: 'notseen', label: 'Not Seen' }
+      ];
+      visOptions.forEach(v => {
+        const chip = document.createElement('button');
+        const selected = STATE[it.id] && STATE[it.id].vis === v.key;
+        chip.className = 'vis-chip' + (selected ? ' selected vis-' + v.key : '');
+        chip.textContent = v.label;
+        chip.onclick = () => selectVis(it.id, v.key);
+        visRow.appendChild(chip);
+      });
+      itemEl.appendChild(visRow);
+
+      if (it.type === 'number') {
+        const row = document.createElement('div');
+        row.className = 'num-input-row';
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.step = '1';
+        input.placeholder = '—';
+        input.value = (STATE[it.id] && STATE[it.id].value) || '';
+        input.oninput = (e) => {
+          if (!STATE[it.id]) STATE[it.id] = { value: null, note: '', note2: '', vis: null };
+          STATE[it.id].value = e.target.value;
+          scheduleSave();
+          updateProgress();
+        };
+        row.appendChild(input);
+        const unitLabel = document.createElement('span');
+        unitLabel.className = 'unit-label';
+        unitLabel.textContent = it.unit || '';
+        row.appendChild(unitLabel);
+        if (it.methodOptions) {
+          const select = document.createElement('select');
+          const blankOpt = document.createElement('option');
+          blankOpt.value = ''; blankOpt.textContent = 'Method...';
+          select.appendChild(blankOpt);
+          it.methodOptions.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m; opt.textContent = m;
+            if (STATE[it.id] && STATE[it.id].note === m) opt.selected = true;
+            select.appendChild(opt);
+          });
+          select.onchange = (e) => {
+            if (!STATE[it.id]) STATE[it.id] = { value: null, note: '', note2: '', vis: null };
+            STATE[it.id].note = e.target.value;
+            scheduleSave();
+          };
+          row.appendChild(select);
+        }
+        itemEl.appendChild(row);
+
+        if (it.note2) {
+          const note2Input = document.createElement('textarea');
+          note2Input.className = 'note-input';
+          note2Input.placeholder = it.note2Placeholder || 'Additional details (optional)';
+          note2Input.value = (STATE[it.id] && STATE[it.id].note2) || '';
+          note2Input.oninput = (e) => {
+            if (!STATE[it.id]) STATE[it.id] = { value: null, note: '', note2: '', vis: null };
+            STATE[it.id].note2 = e.target.value;
+            scheduleSave();
+          };
+          itemEl.appendChild(note2Input);
+        }
+
+        body.appendChild(itemEl);
+        return;
+      }
+
+      const chipRow = document.createElement('div');
+      chipRow.className = 'chip-row';
+      it.options.forEach(opt => {
+        const chip = document.createElement('button');
+        const sev = it.sevMap ? it.sevMap[opt] : null;
+        const selected = STATE[it.id] && STATE[it.id].value === opt;
+        chip.className = 'chip' + (selected ? ' selected' + (sev ? ' sev-' + sev : '') : '');
+        chip.textContent = opt;
+        chip.onclick = () => selectChip(it.id, opt);
+        chipRow.appendChild(chip);
+      });
+      itemEl.appendChild(chipRow);
+
+      if (it.note) {
+        const noteInput = document.createElement('textarea');
+        noteInput.className = 'note-input';
+        noteInput.placeholder = it.notePlaceholder || 'Additional notes (optional)';
+        noteInput.value = (STATE[it.id] && STATE[it.id].note) || '';
+        noteInput.oninput = (e) => { 
+          if (!STATE[it.id]) STATE[it.id] = { value: null, note: '', note2: '', vis: null };
+          STATE[it.id].note = e.target.value; scheduleSave(); 
+        };
+        itemEl.appendChild(noteInput);
+      }
+
+      body.appendChild(itemEl);
+    });
+
+    if (sec.sectionComment) {
+      const commentKey = '__comment_' + sec.id;
+      const commentBlock = document.createElement('div');
+      commentBlock.className = 'comment-block';
+      commentBlock.innerHTML = `<label>Additional Comments — ${sec.title}</label>`;
+      const textarea = document.createElement('textarea');
+      textarea.placeholder = 'Anything else worth noting — prosthetic valve type/model, incidental findings, technical caveats, etc.';
+      textarea.value = STATE[commentKey] || '';
+      textarea.oninput = (e) => {
+        STATE[commentKey] = e.target.value;
+        scheduleSave();
+      };
+      commentBlock.appendChild(textarea);
+      body.appendChild(commentBlock);
+    }
+
+    secEl.appendChild(body);
+    container.appendChild(secEl);
+  });
+
+  updateProgress();
+}
+
+function toggleSection(id) {
+  if (openSections.has(id)) openSections.delete(id);
+  else openSections.add(id);
+  render();
+}
+
+function selectChip(itemId, value) {
+  if (!STATE[itemId]) STATE[itemId] = { value: null, note: '', note2: '', vis: null };
+  STATE[itemId].value = STATE[itemId].value === value ? null : value; // toggle off if clicking same
+  scheduleSave();
+  render();
+}
+
+function selectVis(itemId, visKey) {
+  if (!STATE[itemId]) STATE[itemId] = { value: null, note: '', note2: '', vis: null };
+  STATE[itemId].vis = STATE[itemId].vis === visKey ? null : visKey;
+  scheduleSave();
+  render();
+}
+
+function updateProgress() {
+  let total = 0, done = 0;
+  SECTIONS.forEach(sec => sec.items.forEach(it => {
+    total++;
+    const st = STATE[it.id];
+    if (st && ((st.value !== null && st.value !== '') || st.vis === 'notseen')) done++;
+  }));
+  document.getElementById('progress-text').textContent = `${done} / ${total} items reviewed`;
+  document.getElementById('progress-fill').style.width = total ? (done / total * 100) + '%' : '0%';
+}
+
+// ============== SUMMARY ==============
+function buildSummaryText() {
+  const tag = document.getElementById('patient-tag').value.trim();
+  let lines = [];
+  if (tag) lines.push(`Study: ${tag}`, '');
+
+  SECTIONS.forEach(sec => {
+    const relevant = sec.items.filter(it => STATE[it.id] && (STATE[it.id].value || STATE[it.id].vis));
+    if (relevant.length === 0) return;
+    lines.push(sec.title.toUpperCase() + ':');
+    relevant.forEach(it => {
+      const st = STATE[it.id];
+      let line = `  - ${it.label}: `;
+      if (st.vis === 'notseen') {
+        line += 'Not visualized';
+      } else {
+        line += st.value || '(no finding selected)';
+        if (st.vis === 'poor') line += ' [not well visualized]';
+        if (st.note) line += ` (${st.note})`;
+      }
+      lines.push(line);
+    });
+    lines.push('');
+  });
+
+  // Not Seen / Poorly visualized summary
+  const notSeen = [];
+  const poorlySeen = [];
+  const veryPoorlySeen = [];
+  SECTIONS.forEach(sec => sec.items.forEach(it => {
+    if (STATE[it.id]) {
+      if (STATE[it.id].vis === 'notseen') notSeen.push(it.label);
+      else if (STATE[it.id].vis === 'verypoor') veryPoorlySeen.push(it.label);
+      else if (STATE[it.id].vis === 'poor') poorlySeen.push(it.label);
+    }
+  }));
+  if (veryPoorlySeen.length) {
+    lines.unshift('');
+    lines.unshift('⚠️ POORLY VISUALIZED: ' + veryPoorlySeen.join(', '));
+  }
+  if (poorlySeen.length) {
+    lines.unshift('');
+    lines.unshift('〰 NOT WELL VISUALIZED: ' + poorlySeen.join(', '));
+  }
+  if (notSeen.length) {
+    lines.unshift('');
+    lines.unshift('👁 NOT VISUALIZED: ' + notSeen.join(', '));
+  }
+
+  // Flags summary
+  const flags = [];
+  SECTIONS.forEach(sec => sec.items.forEach(it => {
+    if (it.flagIf && STATE[it.id] && STATE[it.id].value === it.flagIf) {
+      flags.push(`${it.label}: ${STATE[it.id].value}`);
+    }
+  }));
+  if (flags.length) {
+    lines.unshift('');
+    lines.unshift('⚠ FLAGGED FOR ATTENTION: ' + flags.join(' | '));
+  }
+
+  if (lines.length === 0) return 'No items reviewed yet.';
+  return lines.join('\n');
+}
+
+function openSummary() {
+  document.getElementById('summary-text').textContent = buildSummaryText();
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function closeSummary() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+function copySummary() {
+  const text = document.getElementById('summary-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = orig, 1500);
+  }).catch(() => {
+    alert('Could not copy automatically — please select and copy the text manually.');
+  });
+}
+
+async function clearAll() {
+  if (!confirm('Clear all selections and start a new study?')) return;
+  STATE = emptyState();
+  document.getElementById('patient-tag').value = '';
+  try { await window.storage.delete(STORAGE_KEY, false); } catch(e) {}
+  render();
+}
+
+// ============== INIT ==============
+(async function init() {
+  await loadState();
+  render();
+})();
+</script>
+</body>
+</html>
